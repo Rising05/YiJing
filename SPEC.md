@@ -96,7 +96,7 @@
 | SPEC 文档 | Done | Agent-Product | 2026-07-03 | 需求访谈结论已整理 |
 | Phase 1 前端 Mock 闭环 | Ready for QA | Agent-Frontend | 2026-07-03 | `npm install --cache .npm-cache`、`npm run build`、`npm run dev`、`curl -I http://localhost:5173/` 均通过 |
 | Phase 2 后端 Mock + MySQL | In Progress | Agent-Backend | 2026-07-03 | NestJS 后端、Prisma/MySQL schema、mock API 已实现；Docker daemon 未运行，migrate 待验证 |
-| Phase 3 LLM 接入 | Not Started | Agent-AI | - | - |
+| Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-03 | OpenAI-compatible LLM client、prompt 包、JSON 重试解析、schema/anchor 校验已实现；真实调用待 API Key 验证 |
 | Phase 4 通义万相 + 图片存储 | Not Started | Agent-AI | - | - |
 | Phase 5 iOS 打包 | Not Started | Agent-Release | - | - |
 | QA 回归验收 | Not Started | Agent-QA | - | - |
@@ -111,6 +111,7 @@
 | Phase 1 前端 Mock 闭环 | Agent-Frontend | Ready for QA | 搭建 React/Vite/Capacitor 前端，完成登录弹窗、文本/单词 mock 生成、历史、本地导出 PNG、Liquid Glass UI | `package.json`, `apps/mobile/**`, `SPEC.md` | `npm install --cache .npm-cache`; `npm run build`; `npm run dev`; `curl -I http://localhost:5173/` | 2026-07-03 |
 | Phase 2 后端基础与 Prisma schema | Agent-Backend | Done | 新增 NestJS server、JWT 测试登录、生成 mock API、历史 API、账号删除 API、Prisma MySQL schema 和 docker-compose | `apps/server/**`, `docker-compose.yml`, `package.json`, `package-lock.json`, `SPEC.md` | `npm install --cache .npm-cache`; `npm run prisma:generate -w apps/server`; `npm run prisma:validate`; `npm run build:server`; `curl -s http://localhost:3000/api/health` | 2026-07-03 |
 | 前端 API 联调适配 | Agent-Frontend | Done | 新增统一 API client；登录和文本/单词生成优先请求后端 mock API，后端或数据库不可用时回退本地 mock | `apps/mobile/src/services/api.ts`, `apps/mobile/src/stores/authStore.ts`, `apps/mobile/src/pages/TextMemoryPage.tsx`, `apps/mobile/src/pages/WordCardPage.tsx` | `npm run build:mobile`; `npm run build:server` | 2026-07-03 |
+| Phase 3 LLM 接入代码框架 | Agent-AI | Done | 新增 prompts 包、OpenAI-compatible chat completions client、JSON 解析重试、文本/单词 schema 校验、anchor 合法性与容量校验，并接入生成服务；无 Key 时默认 mock | `packages/prompts/**`, `apps/server/src/modules/ai/**`, `apps/server/src/modules/generation/**`, `apps/server/.env.example` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-03 |
 
 追加记录模板：
 
@@ -245,7 +246,7 @@ Progress Log:
 
 | Status | Owner | 更新时间 | 证据/备注 |
 | --- | --- | --- | --- |
-| Not Started | Agent-AI | - | - |
+| In Progress | Agent-AI | 2026-07-03 | LLM 接入代码、prompt、JSON 重试和校验链路已完成；真实 API 调用需配置 `LLM_API_KEY` 后验证 |
 
 ### Phase 4：通义万相 + 图片存储
 

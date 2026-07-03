@@ -1,18 +1,22 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { AiService } from '../ai/ai.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { assertSafeLearningContent } from './content-safety'
 import { TextMemoryDto } from './dto/text-memory.dto'
 import { WordCardDto } from './dto/word-card.dto'
-import { createTextMemoryMock, createWordCardMock } from './mock-generator'
 
 @Injectable()
 export class GenerationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiService: AiService,
+  ) {}
 
   async createTextMemory(userId: string, dto: TextMemoryDto) {
     assertSafeLearningContent(dto.inputText)
-    const result = createTextMemoryMock(dto.inputText, dto.contentType, dto.scenePreference)
+    const aiResult = await this.aiService.createTextMemoryResult(dto)
+    const result = aiResult.result
     return this.saveRecord(userId, {
       type: 'text-memory',
       title: result.title,
@@ -22,7 +26,10 @@ export class GenerationService {
       templateId: result.templateId,
       result,
       imagePrompt: result.imagePrompt,
-      promptUsed: 'mock-text-memory-v1',
+      promptUsed: aiResult.promptUsed,
+      aiProvider: aiResult.provider,
+      aiModel: aiResult.model,
+      rawResponse: aiResult.rawResponse ? (aiResult.rawResponse as unknown as Prisma.InputJsonValue) : null,
     })
   }
 
@@ -32,7 +39,8 @@ export class GenerationService {
       throw new BadRequestException({ code: 'TOO_MANY_WORDS', message: '一次最多 30 个单词或短语，请减少输入。' })
     }
     assertSafeLearningContent(words.join(' '))
-    const result = createWordCardMock(words)
+    const aiResult = await this.aiService.createWordCardResult({ ...dto, words })
+    const result = aiResult.result
     return this.saveRecord(userId, {
       type: 'word-card',
       title: result.title,
@@ -42,7 +50,10 @@ export class GenerationService {
       templateId: result.templateId,
       result,
       imagePrompt: result.imagePrompt,
-      promptUsed: 'mock-word-card-v1',
+      promptUsed: aiResult.promptUsed,
+      aiProvider: aiResult.provider,
+      aiModel: aiResult.model,
+      rawResponse: aiResult.rawResponse ? (aiResult.rawResponse as unknown as Prisma.InputJsonValue) : null,
     })
   }
 
@@ -74,6 +85,9 @@ export class GenerationService {
       result: Record<string, unknown>
       imagePrompt: string
       promptUsed: string
+      aiProvider: string
+      aiModel: string
+      rawResponse: Prisma.InputJsonValue | null
     },
   ) {
     const expiresAt = new Date(Date.now() + 30 * 86400000)
@@ -97,10 +111,12 @@ export class GenerationService {
       data: {
         userId,
         recordId: record.id,
-        provider: 'mock',
-        model: input.promptUsed,
+        provider: input.aiProvider,
+        model: input.aiModel,
         status: 'success',
         imageCount: 0,
+        rawPrompt: process.env.NODE_ENV === 'production' ? null : input.promptUsed,
+        rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.rawResponse ?? Prisma.JsonNull,
       },
     })
     return {
