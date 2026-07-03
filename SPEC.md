@@ -110,6 +110,7 @@
 | 需求访谈整理 | Agent-Product | Done | 整理用户访谈结论并写入 SPEC | `SPEC.md` | 人工检查 | 2026-07-03 |
 | Phase 1 前端 Mock 闭环 | Agent-Frontend | Ready for QA | 搭建 React/Vite/Capacitor 前端，完成登录弹窗、文本/单词 mock 生成、历史、本地导出 PNG、Liquid Glass UI | `package.json`, `apps/mobile/**`, `SPEC.md` | `npm install --cache .npm-cache`; `npm run build`; `npm run dev`; `curl -I http://localhost:5173/` | 2026-07-03 |
 | Phase 2 后端基础与 Prisma schema | Agent-Backend | Done | 新增 NestJS server、JWT 测试登录、生成 mock API、历史 API、账号删除 API、Prisma MySQL schema 和 docker-compose | `apps/server/**`, `docker-compose.yml`, `package.json`, `package-lock.json`, `SPEC.md` | `npm install --cache .npm-cache`; `npm run prisma:generate -w apps/server`; `npm run prisma:validate`; `npm run build:server`; `curl -s http://localhost:3000/api/health` | 2026-07-03 |
+| 前端 API 联调适配 | Agent-Frontend | Done | 新增统一 API client；登录和文本/单词生成优先请求后端 mock API，后端或数据库不可用时回退本地 mock | `apps/mobile/src/services/api.ts`, `apps/mobile/src/stores/authStore.ts`, `apps/mobile/src/pages/TextMemoryPage.tsx`, `apps/mobile/src/pages/WordCardPage.tsx` | `npm run build:mobile`; `npm run build:server` | 2026-07-03 |
 
 追加记录模板：
 

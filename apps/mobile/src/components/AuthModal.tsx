@@ -32,8 +32,8 @@ export default function AuthModal() {
           {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
           <GlassButton
             className="mt-5 w-full"
-            onClick={() => {
-              const ok = login(phone, code)
+            onClick={async () => {
+              const ok = await login(phone, code)
               setError(ok ? '' : '请使用测试手机号 13800000000 和验证码 123456')
             }}
           >

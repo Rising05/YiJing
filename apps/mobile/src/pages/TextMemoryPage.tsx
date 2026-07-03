@@ -4,6 +4,7 @@ import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import LoadingGenerate from '../components/LoadingGenerate'
 import { createMockMemoryResult } from '../mocks/memoryMock'
+import { createTextMemory } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -17,6 +18,7 @@ export default function TextMemoryPage() {
   const [advanced, setAdvanced] = useState(false)
   const [error, setError] = useState('')
   const user = useAuthStore((state) => state.user)
+  const token = useAuthStore((state) => state.token)
   const openAuth = useAuthStore((state) => state.openAuth)
   const setGenerating = useGenerationStore((state) => state.setGenerating)
   const setCurrentResult = useGenerationStore((state) => state.setCurrentResult)
@@ -31,8 +33,10 @@ export default function TextMemoryPage() {
     const request = { inputText: trimmed, contentType, scenePreference }
     setError('')
     setGenerating(true)
-    window.setTimeout(() => {
-      const result = createMockMemoryResult(request)
+    window.setTimeout(async () => {
+      const result = token && token !== 'local-mock-token'
+        ? await createTextMemory(token, request).catch(() => createMockMemoryResult(request))
+        : createMockMemoryResult(request)
       setCurrentResult(result)
       addRecord(result)
       setGenerating(false)

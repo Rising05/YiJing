@@ -4,6 +4,7 @@ import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import LoadingGenerate from '../components/LoadingGenerate'
 import { createMockWordResult } from '../mocks/wordMock'
+import { createWordCard } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -14,6 +15,7 @@ export default function WordCardPage() {
   const [input, setInput] = useState('counter\nluggage\npassport\nboarding gate\nsecurity officer')
   const [error, setError] = useState('')
   const user = useAuthStore((state) => state.user)
+  const token = useAuthStore((state) => state.token)
   const openAuth = useAuthStore((state) => state.openAuth)
   const setGenerating = useGenerationStore((state) => state.setGenerating)
   const setCurrentResult = useGenerationStore((state) => state.setCurrentResult)
@@ -27,8 +29,11 @@ export default function WordCardPage() {
     if (words.length > 30) return setError('一次最多 30 个单词或短语，请减少输入')
     setError('')
     setGenerating(true)
-    window.setTimeout(() => {
-      const result = createMockWordResult({ words, theme: 'auto', cardMode: 'scene' })
+    window.setTimeout(async () => {
+      const request = { words, theme: 'auto' as const, cardMode: 'scene' as const }
+      const result = token && token !== 'local-mock-token'
+        ? await createWordCard(token, request).catch(() => createMockWordResult(request))
+        : createMockWordResult(request)
       setCurrentResult(result)
       addRecord(result)
       setGenerating(false)
