@@ -94,7 +94,7 @@
 | 项目 | 当前状态 | 当前负责人 | 最近更新时间 | 证据/备注 |
 | --- | --- | --- | --- | --- |
 | SPEC 文档 | Done | Agent-Product | 2026-07-03 | 需求访谈结论已整理 |
-| Phase 1 前端 Mock 闭环 | Not Started | Agent-Frontend | - | - |
+| Phase 1 前端 Mock 闭环 | Ready for QA | Agent-Frontend | 2026-07-03 | `npm install --cache .npm-cache`、`npm run build`、`npm run dev`、`curl -I http://localhost:5173/` 均通过 |
 | Phase 2 后端 Mock + MySQL | Not Started | Agent-Backend | - | - |
 | Phase 3 LLM 接入 | Not Started | Agent-AI | - | - |
 | Phase 4 通义万相 + 图片存储 | Not Started | Agent-AI | - | - |
@@ -108,6 +108,7 @@
 | 模块 | Owner | Status | 完成内容 | 变更文件 | 验证方式 | 更新时间 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 需求访谈整理 | Agent-Product | Done | 整理用户访谈结论并写入 SPEC | `SPEC.md` | 人工检查 | 2026-07-03 |
+| Phase 1 前端 Mock 闭环 | Agent-Frontend | Ready for QA | 搭建 React/Vite/Capacitor 前端，完成登录弹窗、文本/单词 mock 生成、历史、本地导出 PNG、Liquid Glass UI | `package.json`, `apps/mobile/**`, `SPEC.md` | `npm install --cache .npm-cache`; `npm run build`; `npm run dev`; `curl -I http://localhost:5173/` | 2026-07-03 |
 
 追加记录模板：
 
@@ -183,7 +184,7 @@ Progress Log:
 
 | Status | Owner | 更新时间 | 证据/备注 |
 | --- | --- | --- | --- |
-| Not Started | Agent-Frontend | - | - |
+| Ready for QA | Agent-Frontend | 2026-07-03 | 前端 mock 闭环已实现；构建通过；Vite dev server 已在 `http://localhost:5173/` 返回 200 |
 
 ### Phase 2：后端 Mock + MySQL
 

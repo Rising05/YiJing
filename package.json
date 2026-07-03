@@ -1,0 +1,14 @@
+{
+  "name": "memory-palace-app",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/mobile",
+    "build": "npm run build -w apps/mobile",
+    "preview": "npm run preview -w apps/mobile"
+  }
+}
