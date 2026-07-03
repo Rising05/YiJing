@@ -1,18 +1,28 @@
 import { Link } from 'react-router-dom'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
+import { deleteAccount } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
 import PageShell from './PageShell'
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user)
+  const token = useAuthStore((state) => state.token)
   const logout = useAuthStore((state) => state.logout)
   const clearRecords = useHistoryStore((state) => state.clearRecords)
 
   function clearCache() {
     localStorage.removeItem('memory-palace-history')
     clearRecords()
+  }
+
+  async function handleDeleteAccount() {
+    if (token && token !== 'local-mock-token') {
+      await deleteAccount(token).catch(() => undefined)
+    }
+    clearCache()
+    logout()
   }
 
   return (
@@ -26,7 +36,7 @@ export default function SettingsPage() {
           </div>
         </LiquidGlassCard>
         <GlassButton variant="secondary" onClick={clearCache}>清除缓存</GlassButton>
-        <GlassButton variant="secondary" onClick={() => { clearCache(); logout() }}>删除测试账号与本地历史</GlassButton>
+        <GlassButton variant="secondary" onClick={() => void handleDeleteAccount()}>删除账号与历史数据</GlassButton>
         <div className="grid gap-2">
           <Link className="settings-link" to="/privacy">隐私政策</Link>
           <Link className="settings-link" to="/terms">用户协议</Link>
