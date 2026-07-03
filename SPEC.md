@@ -98,7 +98,7 @@
 | Phase 2 后端 Mock + MySQL | In Progress | Agent-Backend | 2026-07-03 | NestJS 后端、Prisma/MySQL schema、mock API 已实现；Docker daemon 未运行，migrate 待验证 |
 | Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-03 | OpenAI-compatible LLM client、prompt 包、JSON 重试解析、schema/anchor 校验已实现；真实调用待 API Key 验证 |
 | Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI | 2026-07-03 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象已实现；真实调用待 API Key/OSS 配置验证 |
-| Phase 5 iOS 打包 | Not Started | Agent-Release | - | - |
+| Phase 5 iOS 打包 | In Progress | Agent-Release | 2026-07-03 | Capacitor iOS 依赖、脚本、配置和占位图标/启动页已完成；`cap add ios` 因 CocoaPods/完整 Xcode 缺失阻塞 |
 | QA 回归验收 | Not Started | Agent-QA | - | - |
 
 状态枚举：`Not Started`、`In Progress`、`Blocked`、`Ready for QA`、`Done`。
@@ -113,6 +113,7 @@
 | 前端 API 联调适配 | Agent-Frontend | Done | 新增统一 API client；登录和文本/单词生成优先请求后端 mock API，后端或数据库不可用时回退本地 mock | `apps/mobile/src/services/api.ts`, `apps/mobile/src/stores/authStore.ts`, `apps/mobile/src/pages/TextMemoryPage.tsx`, `apps/mobile/src/pages/WordCardPage.tsx` | `npm run build:mobile`; `npm run build:server` | 2026-07-03 |
 | Phase 3 LLM 接入代码框架 | Agent-AI | Done | 新增 prompts 包、OpenAI-compatible chat completions client、JSON 解析重试、文本/单词 schema 校验、anchor 合法性与容量校验，并接入生成服务；无 Key 时默认 mock | `packages/prompts/**`, `apps/server/src/modules/ai/**`, `apps/server/src/modules/generation/**`, `apps/server/.env.example` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-03 |
 | Phase 4 生图服务代码框架 | Agent-AI | Done | 新增 ImageService 和 StorageService；默认 mock，配置 `IMAGE_MOCK_MODE=false` 与 `WANX_API_KEY` 后调用通义万相 `wan2.6-t2i`，强制无文字/无水印参数并记录图片生成日志 | `apps/server/src/modules/image/**`, `apps/server/src/modules/generation/**`, `apps/server/.env.example`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-03 |
+| Phase 5 iOS 项目准备 | Agent-Release | Done | 加入 `@capacitor/ios`、iOS 同步脚本、Capacitor iOS 配置、图标/启动页 SVG 占位和 iOS 环境说明；Xcode 工程生成因本机环境缺口待执行 | `apps/mobile/package.json`, `apps/mobile/capacitor.config.ts`, `apps/mobile/IOS_SETUP.md`, `apps/mobile/src/assets/**`, `.gitignore`, `SPEC.md` | `npm run build:mobile`; `npm run cap:add:ios -w apps/mobile` 返回 CocoaPods 缺失错误 | 2026-07-03 |
 
 追加记录模板：
 
@@ -142,6 +143,8 @@ Notes:
 | 微信开放平台应用未配置 | 微信登录 | 用户/Agent-Backend | Open | MVP 只预留 |
 | 正式 App 名称未确认 | iOS 发布、品牌资产 | 用户/Agent-Release | Open | 当前使用暂定名 |
 | Docker daemon 未运行 | Phase 2 MySQL migrate | 用户/Agent-Backend | Open | Docker CLI 可用，但 daemon socket 不存在；`docker compose up -d mysql` 暂无法执行 |
+| CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Open | `cap add ios` 报错：CocoaPods is not installed |
+| 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Open | `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode |
 
 ### 4.4 决策记录
 
@@ -288,7 +291,7 @@ Progress Log:
 
 | Status | Owner | 更新时间 | 证据/备注 |
 | --- | --- | --- | --- |
-| Not Started | Agent-Release | - | - |
+| In Progress | Agent-Release | 2026-07-03 | iOS 依赖、脚本、配置和占位资源已完成；`cap add ios` 因 CocoaPods 未安装而无法生成 Xcode 工程 |
 
 ## 6. 产品信息架构
 

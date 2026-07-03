@@ -6,7 +6,6 @@ dist
 .env.local
 *.log
 apps/mobile/android
-apps/mobile/ios
 
 *.tsbuildinfo
 apps/mobile/capacitor.config.js
