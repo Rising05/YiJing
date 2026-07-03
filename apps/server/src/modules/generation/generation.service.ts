@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { AiService } from '../ai/ai.service'
+import { ImageService } from '../image/image.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { assertSafeLearningContent } from './content-safety'
 import { TextMemoryDto } from './dto/text-memory.dto'
@@ -11,12 +12,15 @@ export class GenerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: AiService,
+    private readonly imageService: ImageService,
   ) {}
 
   async createTextMemory(userId: string, dto: TextMemoryDto) {
     assertSafeLearningContent(dto.inputText)
     const aiResult = await this.aiService.createTextMemoryResult(dto)
     const result = aiResult.result
+    const imageResult = await this.imageService.generateBackground({ prompt: result.imagePrompt })
+    result.backgroundImageUrl = imageResult.backgroundImageUrl
     return this.saveRecord(userId, {
       type: 'text-memory',
       title: result.title,
@@ -30,6 +34,9 @@ export class GenerationService {
       aiProvider: aiResult.provider,
       aiModel: aiResult.model,
       rawResponse: aiResult.rawResponse ? (aiResult.rawResponse as unknown as Prisma.InputJsonValue) : null,
+      imageProvider: imageResult.provider,
+      imageModel: imageResult.model,
+      imageRawResponse: imageResult.rawResponse ? (imageResult.rawResponse as unknown as Prisma.InputJsonValue) : null,
     })
   }
 
@@ -41,6 +48,8 @@ export class GenerationService {
     assertSafeLearningContent(words.join(' '))
     const aiResult = await this.aiService.createWordCardResult({ ...dto, words })
     const result = aiResult.result
+    const imageResult = await this.imageService.generateBackground({ prompt: result.imagePrompt })
+    result.backgroundImageUrl = imageResult.backgroundImageUrl
     return this.saveRecord(userId, {
       type: 'word-card',
       title: result.title,
@@ -54,6 +63,9 @@ export class GenerationService {
       aiProvider: aiResult.provider,
       aiModel: aiResult.model,
       rawResponse: aiResult.rawResponse ? (aiResult.rawResponse as unknown as Prisma.InputJsonValue) : null,
+      imageProvider: imageResult.provider,
+      imageModel: imageResult.model,
+      imageRawResponse: imageResult.rawResponse ? (imageResult.rawResponse as unknown as Prisma.InputJsonValue) : null,
     })
   }
 
@@ -88,6 +100,9 @@ export class GenerationService {
       aiProvider: string
       aiModel: string
       rawResponse: Prisma.InputJsonValue | null
+      imageProvider: string
+      imageModel: string
+      imageRawResponse: Prisma.InputJsonValue | null
     },
   ) {
     const expiresAt = new Date(Date.now() + 30 * 86400000)
@@ -117,6 +132,18 @@ export class GenerationService {
         imageCount: 0,
         rawPrompt: process.env.NODE_ENV === 'production' ? null : input.promptUsed,
         rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.rawResponse ?? Prisma.JsonNull,
+      },
+    })
+    await this.prisma.aiUsageLog.create({
+      data: {
+        userId,
+        recordId: record.id,
+        provider: input.imageProvider,
+        model: input.imageModel,
+        status: 'success',
+        imageCount: input.imageProvider === 'mock' ? 0 : 1,
+        rawPrompt: process.env.NODE_ENV === 'production' ? null : input.imagePrompt,
+        rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.imageRawResponse ?? Prisma.JsonNull,
       },
     })
     return {
