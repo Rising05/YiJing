@@ -7,3 +7,11 @@ dist
 *.log
 apps/mobile/android
 apps/mobile/ios
+
+*.tsbuildinfo
+apps/mobile/capacitor.config.js
+apps/mobile/capacitor.config.d.ts
+apps/mobile/tailwind.config.js
+apps/mobile/tailwind.config.d.ts
+apps/mobile/vite.config.js
+apps/mobile/vite.config.d.ts
