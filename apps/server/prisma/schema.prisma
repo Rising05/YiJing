@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String             @id @default(cuid())
+  nickname      String
+  phone         String?            @unique
+  wechatOpenId  String?            @unique
+  wechatUnionId String?
+  avatarUrl     String?
+  records       GenerationRecord[]
+  usageLogs     AiUsageLog[]
+  quota         UserQuota?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  deletedAt     DateTime?
+}
+
+model GenerationRecord {
+  id                 String       @id @default(cuid())
+  userId             String
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type               String
+  title              String
+  contentType        String?
+  inputText          String?      @db.Text
+  inputWords         Json?
+  templateId         String
+  backgroundImageUrl String       @db.Text
+  resultJson         Json
+  imagePrompt        String       @db.Text
+  promptUsed         String?      @db.Text
+  isFavorite         Boolean      @default(false)
+  usageLogs          AiUsageLog[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  expiresAt          DateTime
+  deletedAt          DateTime?
+
+  @@index([userId, createdAt])
+  @@index([deletedAt])
+}
+
+model AiUsageLog {
+  id           String            @id @default(cuid())
+  userId       String?
+  user         User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  recordId     String?
+  record       GenerationRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+  provider     String
+  model        String
+  inputTokens  Int?
+  outputTokens Int?
+  imageCount   Int?
+  costEstimate Decimal?          @db.Decimal(10, 4)
+  status       String
+  errorMessage String?           @db.Text
+  rawPrompt    String?           @db.Text
+  rawResponse  Json?
+  createdAt    DateTime          @default(now())
+}
+
+model UserQuota {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  remainingCredits Int      @default(20)
+  usedCredits      Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
