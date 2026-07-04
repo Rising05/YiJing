@@ -24,10 +24,10 @@ export default function HomePage() {
       </div>
       <p className="mb-5 text-sm leading-6 text-ink/62">把难背的内容变成一张能看懂的记忆图。</p>
 
-      <div className="grid gap-4">
-        <Link className="block" to="/text-memory">
+      <div className="grid min-w-0 gap-4">
+        <Link className="block min-w-0" to="/text-memory" data-testid="home-text-memory-link">
           <LiquidGlassCard interactive>
-            <div className="p-5">
+            <div className="min-w-0 p-5">
               <BookOpen className="h-7 w-7 text-leaf" />
               <h2 className="mt-4 text-xl font-black">文本记忆宫殿</h2>
               <p className="mt-2 text-sm leading-6 text-ink/60">适合古文诗词、现代文背诵，把段落拆成记忆路线。</p>
@@ -37,9 +37,9 @@ export default function HomePage() {
             </div>
           </LiquidGlassCard>
         </Link>
-        <Link className="block" to="/word-card">
+        <Link className="block min-w-0" to="/word-card" data-testid="home-word-card-link">
           <LiquidGlassCard interactive>
-            <div className="p-5">
+            <div className="min-w-0 p-5">
               <Type className="h-7 w-7 text-coral" />
               <h2 className="mt-4 text-xl font-black">单词记忆卡片</h2>
               <p className="mt-2 text-sm leading-6 text-ink/60">最多 30 个单词或短语，图上显示英文和词性。</p>

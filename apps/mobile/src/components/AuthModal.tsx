@@ -13,7 +13,7 @@ export default function AuthModal() {
   if (!isAuthOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-ink/28 p-4 pb-[calc(16px+env(safe-area-inset-bottom))] backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end bg-ink/28 p-4 pb-[calc(16px+env(safe-area-inset-bottom))] backdrop-blur-sm" data-testid="auth-modal">
       <LiquidGlassCard className="w-full">
         <div className="p-5">
           <div className="mb-5 flex items-start justify-between">
@@ -32,6 +32,7 @@ export default function AuthModal() {
           {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
           <GlassButton
             className="mt-5 w-full"
+            data-testid="auth-login-submit"
             onClick={async () => {
               const ok = await login(phone, code)
               setError(ok ? '' : '请使用测试手机号 13800000000 和验证码 123456')

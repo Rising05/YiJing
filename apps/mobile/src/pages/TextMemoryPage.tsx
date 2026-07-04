@@ -63,6 +63,7 @@ export default function TextMemoryPage() {
 
   return (
     <PageShell>
+      <div data-testid="text-memory-page" className="sr-only">文本记忆宫殿页面</div>
       <h1 className="text-2xl font-black">文本记忆宫殿</h1>
       <p className="mt-2 text-sm leading-6 text-ink/62">输入古文诗词或现代文，Mock 阶段会生成可导出的记忆结构。</p>
       <div className="mt-5 grid gap-4">
@@ -100,7 +101,7 @@ export default function TextMemoryPage() {
               </div>
             ) : null}
             {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
-            <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))}>
+            <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))} data-testid="text-memory-generate">
               生成记忆宫殿
             </GlassButton>
           </div>

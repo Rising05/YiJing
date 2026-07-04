@@ -98,6 +98,7 @@ export default function GenerateResultPage() {
 
   return (
     <PageShell>
+      <div data-testid="result-page" className="sr-only">生成结果页面</div>
       <h1 className="text-2xl font-black">{result.title}</h1>
       <p className="mt-2 text-sm text-ink/60">已自动保存到历史记录。</p>
       {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}

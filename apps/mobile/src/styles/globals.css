@@ -11,10 +11,16 @@
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 12% 8%, rgba(255, 122, 102, 0.24), transparent 30%),
     radial-gradient(circle at 86% 12%, rgba(54, 179, 126, 0.22), transparent 26%),
     linear-gradient(145deg, #f8fbff 0%, #e8f0f5 45%, #f7f1ee 100%);
+}
+
+#root {
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
@@ -27,7 +33,8 @@ a {
   isolation: isolate;
   width: 100%;
   border-radius: 24px;
-  overflow: visible;
+  overflow: hidden;
+  transform: translateZ(0);
 }
 
 .glass-shell > :not(.glass-liquid) {
@@ -40,22 +47,42 @@ a {
   left: auto !important;
   display: block !important;
   width: 100%;
+  min-width: 0;
   transform: none !important;
   border-radius: inherit !important;
-  overflow: visible;
+  overflow: hidden;
+  contain: paint;
+}
+
+.glass-liquid > svg {
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .glass-liquid > .glass {
   display: flex !important;
   width: 100%;
+  min-width: 0;
   border-radius: inherit !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .glass-liquid > .glass > div {
   width: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  color: inherit !important;
+  font: inherit !important;
+  text-shadow: none !important;
 }
 
 .glass-fallback {
+  box-sizing: border-box;
+  min-width: 0;
   border-radius: inherit;
   border: 1px solid rgba(255, 255, 255, 0.64);
   background: rgba(255, 255, 255, 0.42);

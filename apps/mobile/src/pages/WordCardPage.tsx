@@ -60,6 +60,7 @@ export default function WordCardPage() {
 
   return (
     <PageShell>
+      <div data-testid="word-card-page" className="sr-only">单词记忆卡片页面</div>
       <h1 className="text-2xl font-black">单词记忆卡片</h1>
       <p className="mt-2 text-sm leading-6 text-ink/62">支持一行一个，也支持逗号分隔。图上只显示英文和词性。</p>
       <div className="mt-5 grid gap-4">
@@ -69,7 +70,7 @@ export default function WordCardPage() {
             <textarea className="form-input min-h-52 resize-none" value={input} onChange={(event) => setInput(event.target.value)} />
             <div className="mt-2 text-right text-xs text-ink/52">已识别 {words.length}/30 个</div>
             {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
-            <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))}>
+            <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))} data-testid="word-card-generate">
               生成单词卡片
             </GlassButton>
           </div>

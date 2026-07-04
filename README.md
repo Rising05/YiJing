@@ -101,7 +101,7 @@ npm run build:mobile
 - 删除单条历史记录前会在对应卡片内显示确认操作。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
-- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层。
+- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断和无水平溢出已纳入 UI smoke。
 
 ## 后端运行
 
@@ -311,6 +311,7 @@ npm run check:ai-templates
 npm run check:content-safety
 npm run cleanup:expired-images
 npm run smoke:api
+npm run smoke:ui
 ```
 
 `npm run check:ai-templates` 需要先执行 `npm run build:server`，用于验证后端 AI prompt/校验层使用的是 `packages/shared` 中的 10 个 canonical templates，避免真实 LLM 模式下模板数量和 SPEC 分叉。
@@ -320,6 +321,8 @@ npm run smoke:api
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 
 `npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
+
+`npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、单词生成入口和结果页。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
 
 ## 后续 TODO
 
