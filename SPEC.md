@@ -95,11 +95,11 @@
 | --- | --- | --- | --- | --- |
 | SPEC 文档 | Done | Agent-Product | 2026-07-03 | 需求访谈结论已整理 |
 | Phase 1 前端 Mock 闭环 | Ready for QA | Agent-Frontend | 2026-07-03 | `npm install --cache .npm-cache`、`npm run build`、`npm run dev`、`curl -I http://localhost:5173/` 均通过 |
-| Phase 2 后端 Mock + MySQL | In Progress | Agent-Backend | 2026-07-03 | NestJS 后端、Prisma/MySQL schema、mock API 已实现；Docker daemon 未运行，migrate 待验证 |
+| Phase 2 后端 Mock + MySQL | Ready for QA | Agent-Backend | 2026-07-04 | MySQL migrate 完成，全部 10 项 smoke test 通过（health/login/text-memory/word-card/regenerate/history/detail/favorite/delete history/delete account）
 | Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-03 | OpenAI-compatible LLM client、prompt 包、JSON 重试解析、schema/anchor 校验已实现；真实调用待 API Key 验证 |
 | Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI | 2026-07-03 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象已实现；真实调用待 API Key/OSS 配置验证 |
 | Phase 5 iOS 打包 | In Progress | Agent-Release | 2026-07-03 | Capacitor iOS 依赖、脚本、配置和占位图标/启动页已完成；`cap add ios` 因 CocoaPods/完整 Xcode 缺失阻塞 |
-| QA 回归验收 | In Progress | Agent-QA | 2026-07-04 | 静态检查（build:server、build:mobile、prisma:validate、smoke 语法）通过；运行时 smoke test 因 MySQL 未启动阻塞 |
+| QA 回归验收 | In Progress | Agent-QA | 2026-07-04 | 静态检查通过；smoke test 10/10 通过；待完整前端 E2E 验证 |
 
 状态枚举：`Not Started`、`In Progress`、`Blocked`、`Ready for QA`、`Done`。
 
@@ -131,6 +131,7 @@
 | 历史单条删除确认 | Agent-Frontend | Done | 历史列表每条记录删除前新增卡片内二次确认；取消不会影响收藏或详情入口，确认后继续调用后端删除并移除本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 | 共享类型包 `packages/shared` | Agent-AI | Done | 新增 `packages/shared/`，集中管理 SPEC §9 类型定义、§10 模板常量、§15 错误码；通过 root workspace 自动链接，前后端可复用 | `packages/shared/**`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `ls packages/shared/src/` | 2026-07-04 |
 | QA 静态回归验证 | Agent-QA | Done | 全量构建（server + mobile）、Prisma schema 校验、smoke 脚本语法检查通过；运行时 smoke 因 Docker/MySQL 未就绪待验证 | `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
+| Phase 2 MySQL migrate + smoke 全流程 | Agent-QA | Done | 启动 MySQL 容器、Prisma migrate 建表、启动 NestJS server、运行 smoke test 全部 10 项通过；修复 packages ESM/CJS 冲突；端口 3306 冲突改为 3307 | `docker-compose.yml`, `apps/server/.env`, `apps/server/.env.example`, `packages/prompts/package.json`, `packages/shared/package.json`, `SPEC.md` | `docker compose up -d mysql`; `npm run prisma:migrate -w apps/server -- --name init`; `npm run dev -w apps/server`; `node apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 
 追加记录模板：
 
@@ -159,7 +160,7 @@ Notes:
 | 短信服务商未确定 | 真实手机号登录 | 用户/Agent-Backend | Open | MVP 用固定测试验证码 |
 | 微信开放平台应用未配置 | 微信登录 | 用户/Agent-Backend | Open | MVP 只预留 |
 | 正式 App 名称未确认 | iOS 发布、品牌资产 | 用户/Agent-Release | Open | 当前使用暂定名 |
-| Docker daemon 未运行 | Phase 2 MySQL migrate | 用户/Agent-Backend | Open | Docker CLI 可用，但 daemon socket 不存在；`docker compose up -d mysql` 暂无法执行 |
+| Docker daemon 未运行 | Phase 2 MySQL migrate | 用户/Agent-Backend | Resolved | ✅ Docker 已启动，MySQL 容器正常运行，migrate 已完成 |
 | CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Open | `cap add ios` 报错：CocoaPods is not installed |
 | 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Open | `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode |
 | Java/Android SDK 未配置 | Android APK/AAB 构建 | 用户/Agent-Release | Open | `java -version` 报错且 `ANDROID_HOME` 为空；Android 工程已生成但无法本机构建 |
