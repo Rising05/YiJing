@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import AiDisclaimer from '../components/AiDisclaimer'
 import ExportImageButton from '../components/ExportImageButton'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
@@ -130,6 +131,7 @@ export default function GenerateResultPage() {
       <section className="mt-6">
         <h2 className="mb-3 text-lg font-black">记忆详情</h2>
         <div className="grid gap-3">
+          <AiDisclaimer />
           {result.type === 'text-memory'
             ? result.points.map((point) => (
                 <LiquidGlassCard key={point.id}>

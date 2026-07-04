@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import AiDisclaimer from '../components/AiDisclaimer'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import LoadingGenerate from '../components/LoadingGenerate'
@@ -105,6 +106,7 @@ export default function TextMemoryPage() {
           </div>
         </LiquidGlassCard>
         {isGenerating ? <LoadingGenerate /> : null}
+        <AiDisclaimer />
       </div>
     </PageShell>
   )
