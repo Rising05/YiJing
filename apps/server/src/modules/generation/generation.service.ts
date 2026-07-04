@@ -42,7 +42,7 @@ export class GenerationService {
   }
 
   async createWordCard(userId: string, dto: WordCardDto) {
-    const words = [...new Set(dto.words.map((word) => word.trim()).filter(Boolean))]
+    const words = this.normalizeWords(dto.words)
     if (words.length > 30) {
       throw new BadRequestException({ code: 'TOO_MANY_WORDS', message: '一次最多 30 个单词或短语，请减少输入。' })
     }
@@ -85,6 +85,19 @@ export class GenerationService {
     }
     const words = Array.isArray(record.inputWords) ? (record.inputWords as string[]) : []
     return this.createWordCard(userId, { words, theme: 'auto', cardMode: 'scene' })
+  }
+
+  private normalizeWords(input: string[]) {
+    const seen = new Set<string>()
+    return input
+      .map((word) => word.trim())
+      .filter(Boolean)
+      .filter((word) => {
+        const key = word.toLowerCase()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
   }
 
   private async ensureQuota(userId: string) {

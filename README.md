@@ -94,6 +94,7 @@ npm run build:mobile
 - 文本生成、单词生成、结果页和关于页都会展示 AI 学习辅助免责声明。
 - PNG 导出在浏览器本地合成，不上传服务器。
 - 后端校验错误会映射为稳定业务码，例如 `INPUT_TOO_LONG`、`TOO_MANY_WORDS`、`INVALID_INPUT`。
+- 单词/短语在前端和后端都会 trim 并按大小写不敏感规则去重。
 
 ## 后端运行
 
