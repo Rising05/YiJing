@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
+    "check:content-safety": "node scripts/check-content-safety.mjs",
     "smoke:api": "node scripts/smoke-api.mjs",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",

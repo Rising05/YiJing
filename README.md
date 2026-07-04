@@ -305,8 +305,11 @@ npm run build:server
 npm run prisma:validate
 npm run dev:mobile
 npm run dev:server
+npm run check:content-safety
 npm run smoke:api
 ```
+
+`npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
 `npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
