@@ -58,8 +58,20 @@ async function main() {
   if (!wordResult.id || wordResult.type !== 'word-card') throw new Error('word generation returned invalid result')
   console.log('word-card:', wordResult.id)
 
+  const regenerated = await request(`/generation/${textResult.id}/regenerate`, {
+    method: 'POST',
+    headers: auth(token),
+  })
+  if (!regenerated.id || regenerated.id === textResult.id || regenerated.type !== 'text-memory') {
+    throw new Error('regenerate returned invalid result')
+  }
+  if (!regenerated.credits || typeof regenerated.credits.remaining !== 'number') {
+    throw new Error('regenerate did not return credit state')
+  }
+  console.log('regenerate:', regenerated.id)
+
   const history = await request('/history', { headers: auth(token) })
-  if (!Array.isArray(history) || history.length < 2) throw new Error('history did not include generated records')
+  if (!Array.isArray(history) || history.length < 3) throw new Error('history did not include generated records')
   console.log('history:', history.length)
 
   const detail = await request(`/history/${textResult.id}`, { headers: auth(token) })

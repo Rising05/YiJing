@@ -66,6 +66,13 @@ export function createWordCard(token: string, payload: WordCardRequest) {
   })
 }
 
+export function regenerateGeneration(token: string, id: string) {
+  return request<GenerationResult>(`/generation/${id}/regenerate`, {
+    method: 'POST',
+    headers: authHeaders(token),
+  })
+}
+
 export function fetchHistory(token: string) {
   return request<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'createdAt' | 'expiresAt'>>>('/history', {
     headers: authHeaders(token),

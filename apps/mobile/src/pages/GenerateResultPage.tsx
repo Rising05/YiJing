@@ -1,22 +1,83 @@
 import { useMemo, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import ExportImageButton from '../components/ExportImageButton'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import MemoryPalaceCanvas from '../components/MemoryPalaceCanvas'
 import WordMemoryCard from '../components/WordMemoryCard'
+import { createMockMemoryResult } from '../mocks/memoryMock'
+import { createMockWordResult } from '../mocks/wordMock'
+import { ApiError, regenerateGeneration } from '../services/api'
+import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
 import type { ExportRatio } from '../services/exportImage'
+import type { GenerationResult } from '../types'
 import PageShell from './PageShell'
 
 export default function GenerateResultPage() {
   const { id = '' } = useParams()
   const currentResult = useGenerationStore((state) => state.currentResult)
+  const setCurrentResult = useGenerationStore((state) => state.setCurrentResult)
   const getRecord = useHistoryStore((state) => state.getRecord)
+  const addRecord = useHistoryStore((state) => state.addRecord)
   const result = useMemo(() => currentResult?.id === id ? currentResult : getRecord(id), [currentResult, getRecord, id])
+  const user = useAuthStore((state) => state.user)
+  const token = useAuthStore((state) => state.token)
+  const openAuth = useAuthStore((state) => state.openAuth)
+  const consumeCredit = useAuthStore((state) => state.consumeCredit)
+  const setRemainingCredits = useAuthStore((state) => state.setRemainingCredits)
   const exportRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
   const [ratio, setRatio] = useState<ExportRatio>('9:16')
+  const [regenerating, setRegenerating] = useState(false)
+  const [error, setError] = useState('')
+
+  function createLocalRegeneration(source: GenerationResult) {
+    if (source.type === 'text-memory') {
+      return createMockMemoryResult({
+        inputText: source.points.map((point) => point.originalText).join('。'),
+        contentType: source.contentType,
+        scenePreference: 'auto',
+      })
+    }
+    return createMockWordResult({
+      words: source.words.map((word) => word.word),
+      theme: 'auto',
+      cardMode: 'scene',
+    })
+  }
+
+  async function regenerate() {
+    if (!result) return
+    if (!user) return
+    if (user.remainingCredits !== undefined && user.remainingCredits <= 0) {
+      setError('生成次数不足，请稍后补充次数')
+      return
+    }
+    setError('')
+    setRegenerating(true)
+    try {
+      const nextResult = token && token !== 'local-mock-token'
+        ? await regenerateGeneration(token, result.id).catch((error) => {
+            if (error instanceof ApiError) throw error
+            if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+            return createLocalRegeneration(result)
+          })
+        : (() => {
+            if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+            return createLocalRegeneration(result)
+          })()
+      if (nextResult.credits) setRemainingCredits(nextResult.credits.remaining)
+      setCurrentResult(nextResult)
+      addRecord(nextResult)
+      navigate(`/result/${nextResult.id}`)
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : '重新生成失败，请稍后重试')
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   if (!result) {
     return (
@@ -37,6 +98,7 @@ export default function GenerateResultPage() {
     <PageShell>
       <h1 className="text-2xl font-black">{result.title}</h1>
       <p className="mt-2 text-sm text-ink/60">已自动保存到历史记录。</p>
+      {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
       <div className="mt-5">
         {result.type === 'text-memory' ? (
           <MemoryPalaceCanvas ref={exportRef} result={result} exportRatio={ratio} />
@@ -54,9 +116,9 @@ export default function GenerateResultPage() {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <ExportImageButton targetRef={exportRef} ratio={ratio} />
-        <Link to={result.type === 'text-memory' ? '/text-memory' : '/word-card'}>
-          <GlassButton className="w-full">重新生成</GlassButton>
-        </Link>
+        <GlassButton className="w-full" loading={regenerating} onClick={() => (user ? void regenerate() : openAuth())}>
+          重新生成
+        </GlassButton>
       </div>
       <section className="mt-6">
         <h2 className="mb-3 text-lg font-black">记忆详情</h2>
