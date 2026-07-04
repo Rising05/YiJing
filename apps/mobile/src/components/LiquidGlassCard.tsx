@@ -11,13 +11,13 @@ export default function LiquidGlassCard({ children, className = '', interactive 
   return (
     <div className={`glass-shell transition-transform duration-150 ${interactive ? 'active:scale-[0.99]' : ''} ${className}`}>
       <LiquidGlass
-        displacementScale={42}
+        displacementScale={24}
         blurAmount={blur}
         saturation={135}
-        aberrationIntensity={1.2}
-        elasticity={interactive ? 0.22 : 0.08}
+        aberrationIntensity={0.9}
+        elasticity={interactive ? 0.16 : 0.06}
         cornerRadius={24}
-        className="h-full w-full"
+        className="glass-liquid h-full w-full"
         padding="0"
         overLight
       >

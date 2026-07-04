@@ -25,7 +25,7 @@ export default function HomePage() {
       <p className="mb-5 text-sm leading-6 text-ink/62">把难背的内容变成一张能看懂的记忆图。</p>
 
       <div className="grid gap-4">
-        <Link to="/text-memory">
+        <Link className="block" to="/text-memory">
           <LiquidGlassCard interactive>
             <div className="p-5">
               <BookOpen className="h-7 w-7 text-leaf" />
@@ -37,7 +37,7 @@ export default function HomePage() {
             </div>
           </LiquidGlassCard>
         </Link>
-        <Link to="/word-card">
+        <Link className="block" to="/word-card">
           <LiquidGlassCard interactive>
             <div className="p-5">
               <Type className="h-7 w-7 text-coral" />
@@ -61,7 +61,7 @@ export default function HomePage() {
         {records.length ? (
           <div className="grid gap-3">
             {records.slice(0, 3).map((record) => (
-              <Link key={record.id} to={`/detail/${record.id}`}>
+              <Link className="block" key={record.id} to={`/detail/${record.id}`}>
                 <LiquidGlassCard interactive>
                   <div className="flex items-center justify-between p-4">
                     <div>

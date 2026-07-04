@@ -23,8 +23,36 @@ a {
 }
 
 .glass-shell {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
   border-radius: 24px;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.glass-shell > :not(.glass-liquid) {
+  display: none !important;
+}
+
+.glass-liquid {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  display: block !important;
+  width: 100%;
+  transform: none !important;
+  border-radius: inherit !important;
+  overflow: visible;
+}
+
+.glass-liquid > .glass {
+  display: flex !important;
+  width: 100%;
+  border-radius: inherit !important;
+}
+
+.glass-liquid > .glass > div {
+  width: 100%;
 }
 
 .glass-fallback {
@@ -33,6 +61,7 @@ a {
   background: rgba(255, 255, 255, 0.42);
   box-shadow: 0 18px 48px rgba(31, 41, 55, 0.12);
   backdrop-filter: blur(22px);
+  color: #182030;
   overflow: hidden;
 }
 
