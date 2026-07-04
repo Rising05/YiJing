@@ -117,6 +117,7 @@
 | README 使用文档 | Agent-Product | Done | 新增项目介绍、技术栈、本地运行、mock 模式、LLM/万相接入、iOS/Android 打包和大陆发布注意事项 | `README.md`, `SPEC.md` | 人工检查；`npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 历史与账号 API 联调适配 | Agent-Frontend | Done | 历史列表、历史详情、删除历史和删除账号优先请求后端 API，后端不可用时回退本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `apps/mobile/src/pages/DetailPage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 后端 API Smoke Test | Agent-QA | Done | 新增后端主流程 smoke 脚本，覆盖健康检查、测试登录、文本生成、单词生成、历史、收藏、删除历史和删除账号 | `apps/server/scripts/smoke-api.mjs`, `package.json`, `apps/server/package.json`, `README.md`, `SPEC.md` | `node --check apps/server/scripts/smoke-api.mjs`; `npm run build:server`; `npm run prisma:validate` | 2026-07-04 |
+| Android Capacitor 工程准备 | Agent-Release | Done | 加入 `@capacitor/android`、Android 同步脚本并生成 `apps/mobile/android` 工程；AAB/APK 构建待 Android Studio/JDK 环境 | `apps/mobile/android/**`, `apps/mobile/package.json`, `apps/mobile/ANDROID_SETUP.md`, `.gitignore`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run cap:add:android -w apps/mobile` | 2026-07-04 |
 
 追加记录模板：
 
@@ -148,6 +149,7 @@ Notes:
 | Docker daemon 未运行 | Phase 2 MySQL migrate | 用户/Agent-Backend | Open | Docker CLI 可用，但 daemon socket 不存在；`docker compose up -d mysql` 暂无法执行 |
 | CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Open | `cap add ios` 报错：CocoaPods is not installed |
 | 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Open | `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode |
+| Java/Android SDK 未配置 | Android APK/AAB 构建 | 用户/Agent-Release | Open | `java -version` 报错且 `ANDROID_HOME` 为空；Android 工程已生成但无法本机构建 |
 
 ### 4.4 决策记录
 

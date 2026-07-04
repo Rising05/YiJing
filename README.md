@@ -242,16 +242,15 @@ open apps/mobile/ios/App/App.xcworkspace
 
 ## Android 打包
 
-Android 还未进入实现阶段。后续建议步骤：
+Android Capacitor 工程已生成在 `apps/mobile/android/`。本机仍需要 Android Studio、Android SDK 和 Java JDK 才能构建 APK/AAB。
 
 ```bash
-npm install @capacitor/android -w apps/mobile
 npm run build:mobile
-npx cap add android --prefix apps/mobile
-npx cap sync android --prefix apps/mobile
+npm run cap:sync:android -w apps/mobile
+open -a "Android Studio" apps/mobile/android
 ```
 
-Android AAB 输出会在 Phase 5 后续或 Android 专项阶段处理。
+详见 `apps/mobile/ANDROID_SETUP.md`。Android AAB 输出会在 Android Studio/JDK 环境可用后继续配置。
 
 ## 中国大陆发布注意事项
 
