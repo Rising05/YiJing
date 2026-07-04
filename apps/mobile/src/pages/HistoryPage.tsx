@@ -15,6 +15,7 @@ export default function HistoryPage() {
   const token = useAuthStore((state) => state.token)
   const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'backgroundImageUrl' | 'createdAt' | 'expiresAt' | 'isFavorite'>> | null>(null)
   const [loading, setLoading] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token || token === 'local-mock-token') {
@@ -36,6 +37,7 @@ export default function HistoryPage() {
       setRemoteRecords((items) => items?.filter((item) => item.id !== id) ?? null)
     }
     removeRecord(id)
+    setConfirmDeleteId(null)
   }
 
   async function handleFavorite(id: string, currentValue?: boolean) {
@@ -61,23 +63,39 @@ export default function HistoryPage() {
           </LiquidGlassCard>
         ) : records.length ? records.map((record) => (
           <LiquidGlassCard key={record.id} interactive>
-            <div className="flex items-center justify-between p-4">
-              <Link className="min-w-0 flex-1" to={`/detail/${record.id}`}>
-                <p className="truncate font-bold">{record.title}</p>
-                <p className="mt-1 text-xs text-ink/54">{record.type === 'text-memory' ? '文本记忆' : '单词卡片'} · {new Date(record.createdAt).toLocaleString()}</p>
-              </Link>
-              <div className="flex shrink-0 items-center">
-                <button
-                  className={`rounded-full p-3 ${record.isFavorite ? 'text-coral' : 'text-ink/38'}`}
-                  onClick={() => void handleFavorite(record.id, record.isFavorite)}
-                  aria-label={record.isFavorite ? '取消收藏' : '收藏历史'}
-                >
-                  <Star className="h-4 w-4" fill={record.isFavorite ? 'currentColor' : 'none'} />
-                </button>
-                <button className="rounded-full p-3 text-coral" onClick={() => void handleDelete(record.id)} aria-label="删除历史">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <Link className="min-w-0 flex-1" to={`/detail/${record.id}`}>
+                  <p className="truncate font-bold">{record.title}</p>
+                  <p className="mt-1 text-xs text-ink/54">{record.type === 'text-memory' ? '文本记忆' : '单词卡片'} · {new Date(record.createdAt).toLocaleString()}</p>
+                </Link>
+                <div className="flex shrink-0 items-center">
+                  <button
+                    className={`rounded-full p-3 ${record.isFavorite ? 'text-coral' : 'text-ink/38'}`}
+                    onClick={() => void handleFavorite(record.id, record.isFavorite)}
+                    aria-label={record.isFavorite ? '取消收藏' : '收藏历史'}
+                  >
+                    <Star className="h-4 w-4" fill={record.isFavorite ? 'currentColor' : 'none'} />
+                  </button>
+                  <button className="rounded-full p-3 text-coral" onClick={() => setConfirmDeleteId(record.id)} aria-label="删除历史">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
+              {confirmDeleteId === record.id ? (
+                <div className="mt-3 rounded-2xl bg-white/55 p-3">
+                  <p className="text-sm font-bold">确认删除这条历史？</p>
+                  <p className="mt-1 text-xs leading-5 text-ink/58">删除后本地列表会立即移除，后端记录会同步标记删除。</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button className="rounded-xl bg-white/70 px-3 py-2 text-sm font-semibold text-ink" onClick={() => setConfirmDeleteId(null)}>
+                      取消
+                    </button>
+                    <button className="rounded-xl bg-coral px-3 py-2 text-sm font-semibold text-white" onClick={() => void handleDelete(record.id)}>
+                      确认删除
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </LiquidGlassCard>
         )) : (
