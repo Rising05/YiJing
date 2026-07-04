@@ -100,6 +100,7 @@ npm run build:mobile
 - 清除缓存和删除账号都会先显示二次确认，减少误触风险。
 - 删除单条历史记录前会在对应卡片内显示确认操作。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
+- 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
 
 ## 后端运行
 
@@ -268,6 +269,8 @@ open -a "Android Studio" apps/mobile/android
 详见 `apps/mobile/ANDROID_SETUP.md`。Android AAB 输出会在 Android Studio/JDK 环境可用后继续配置。
 
 当前 Android launcher 图标已生成到 `apps/mobile/android/app/src/main/res/mipmap-*`，源图保存在 `apps/mobile/src/assets/logo.png`。
+
+Android `versionCode` 当前为 `1`，`versionName` 为 `0.1.0`，与前端设置页/关于页显示版本保持一致。
 
 ## 中国大陆发布注意事项
 

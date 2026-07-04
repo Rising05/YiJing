@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
+import { APP_VERSION } from '../constants/app'
 import { deleteAccount } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -72,7 +73,7 @@ export default function SettingsPage() {
           <Link className="settings-link" to="/terms">用户协议</Link>
           <Link className="settings-link" to="/about">关于我们</Link>
         </div>
-        <p className="text-center text-xs text-ink/42">忆境 MemoryPalace v0.1.0</p>
+        <p className="text-center text-xs text-ink/42">忆境 MemoryPalace v{APP_VERSION}</p>
       </div>
     </PageShell>
   )
