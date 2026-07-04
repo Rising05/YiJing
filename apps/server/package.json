@@ -9,6 +9,7 @@
     "start": "node dist/main.js",
     "check:ai-templates": "node scripts/check-ai-templates.mjs",
     "check:content-safety": "node scripts/check-content-safety.mjs",
+    "check:config": "node scripts/check-runtime-config.mjs",
     "cleanup:expired-images": "node scripts/cleanup-expired-images.mjs",
     "smoke:api": "node scripts/smoke-api.mjs",
     "prisma:validate": "prisma validate",
