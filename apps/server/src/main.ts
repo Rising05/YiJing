@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { HttpErrorFilter } from './common/filters/http-error.filter'
+import { createValidationException } from './common/validation-error'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -16,6 +17,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: createValidationException,
     }),
   )
   app.useGlobalFilters(new HttpErrorFilter())
