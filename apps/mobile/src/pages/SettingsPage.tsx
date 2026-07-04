@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
@@ -7,6 +8,8 @@ import { useHistoryStore } from '../stores/historyStore'
 import PageShell from './PageShell'
 
 export default function SettingsPage() {
+  const [confirmAction, setConfirmAction] = useState<'clear-cache' | 'delete-account' | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token)
   const logout = useAuthStore((state) => state.logout)
@@ -15,14 +18,17 @@ export default function SettingsPage() {
   function clearCache() {
     localStorage.removeItem('memory-palace-history')
     clearRecords()
+    setConfirmAction(null)
   }
 
   async function handleDeleteAccount() {
+    setDeleting(true)
     if (token && token !== 'local-mock-token') {
       await deleteAccount(token).catch(() => undefined)
     }
     clearCache()
     logout()
+    setDeleting(false)
   }
 
   return (
@@ -38,8 +44,29 @@ export default function SettingsPage() {
             ) : null}
           </div>
         </LiquidGlassCard>
-        <GlassButton variant="secondary" onClick={clearCache}>清除缓存</GlassButton>
-        <GlassButton variant="secondary" onClick={() => void handleDeleteAccount()}>删除账号与历史数据</GlassButton>
+        {confirmAction ? (
+          <LiquidGlassCard>
+            <div className="p-4">
+              <p className="text-sm font-bold">{confirmAction === 'delete-account' ? '确认删除账号？' : '确认清除缓存？'}</p>
+              <p className="mt-2 text-sm leading-6 text-ink/60">
+                {confirmAction === 'delete-account'
+                  ? '这会删除当前账号、历史记录和本地缓存。操作完成后需要重新登录。'
+                  : '这会清除本机保存的历史缓存，不会删除后端账号。'}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <GlassButton variant="secondary" onClick={() => setConfirmAction(null)}>取消</GlassButton>
+                <GlassButton
+                  loading={deleting}
+                  onClick={() => confirmAction === 'delete-account' ? void handleDeleteAccount() : clearCache()}
+                >
+                  确认
+                </GlassButton>
+              </div>
+            </div>
+          </LiquidGlassCard>
+        ) : null}
+        <GlassButton variant="secondary" onClick={() => setConfirmAction('clear-cache')}>清除缓存</GlassButton>
+        <GlassButton variant="secondary" onClick={() => setConfirmAction('delete-account')}>删除账号与历史数据</GlassButton>
         <div className="grid gap-2">
           <Link className="settings-link" to="/privacy">隐私政策</Link>
           <Link className="settings-link" to="/terms">用户协议</Link>
