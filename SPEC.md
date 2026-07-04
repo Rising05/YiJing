@@ -135,6 +135,7 @@
 | README MySQL/Smoke 状态校准 | Agent-Docs | Done | README 移除 Docker/MySQL 旧阻塞说明，补充 3307 端口、migration 路径、smoke 已验证状态，并将 Android TODO 收敛为 AAB/APK 打包 | `README.md`, `SPEC.md` | `docker ps`; `ls apps/server/prisma/migrations`; 人工检查 README | 2026-07-04 |
 | Android launcher 图标接入 | Agent-Release | Done | 将提供的 1024x1024 PNG 复制为受控源图 `apps/mobile/src/assets/logo.png`，并生成 Android `mipmap-*` 多密度 launcher/round/foreground 图标资源；根目录原始 `logo.png` 保留未跟踪 | `apps/mobile/src/assets/logo.png`, `apps/mobile/android/app/src/main/res/mipmap-*/ic_launcher*.png`, `README.md`, `SPEC.md` | `file apps/mobile/src/assets/logo.png`; `file apps/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png`; `npm run build:mobile` | 2026-07-04 |
 | App 版本号一致性 | Agent-Release/Frontend | Done | 新增前端 `APP_VERSION` 常量，设置页和关于页统一显示 `v0.1.0`；Android `versionName` 从默认 `1.0` 调整为 `0.1.0` | `apps/mobile/src/constants/app.ts`, `apps/mobile/src/pages/SettingsPage.tsx`, `apps/mobile/src/pages/AboutPage.tsx`, `apps/mobile/android/app/build.gradle`, `README.md`, `SPEC.md` | `npm run build:mobile`; `rg \"versionName|APP_VERSION|v0.1.0\" apps/mobile` | 2026-07-04 |
+| Liquid Glass 封装修复 | Agent-Frontend | Done | 恢复 `LiquidGlassCard` 对 `liquid-glass-react` 的实际封装，同时保留 CSS fallback 的圆角和 overflow 修复，确保符合 SPEC 的 Liquid Glass 实现要求 | `apps/mobile/src/components/LiquidGlassCard.tsx`, `apps/mobile/src/styles/globals.css`, `README.md`, `SPEC.md` | `npm run build:mobile`; `rg \"LiquidGlass|liquid-glass-react\" apps/mobile/src apps/mobile/package.json` | 2026-07-04 |
 
 追加记录模板：
 

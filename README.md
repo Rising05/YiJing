@@ -101,6 +101,7 @@ npm run build:mobile
 - 删除单条历史记录前会在对应卡片内显示确认操作。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
+- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层。
 
 ## 后端运行
 

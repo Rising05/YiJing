@@ -28,10 +28,12 @@ a {
 }
 
 .glass-fallback {
+  border-radius: inherit;
   border: 1px solid rgba(255, 255, 255, 0.64);
   background: rgba(255, 255, 255, 0.42);
   box-shadow: 0 18px 48px rgba(31, 41, 55, 0.12);
   backdrop-filter: blur(22px);
+  overflow: hidden;
 }
 
 .form-label {

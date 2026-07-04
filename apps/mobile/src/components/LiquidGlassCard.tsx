@@ -5,12 +5,11 @@ interface Props extends PropsWithChildren {
   className?: string
   interactive?: boolean
   blur?: number
-  opacity?: number
 }
 
 export default function LiquidGlassCard({ children, className = '', interactive = false, blur = 0.08 }: Props) {
   return (
-    <div className={`glass-shell ${interactive ? 'active:scale-[0.99]' : ''} ${className}`}>
+    <div className={`glass-shell transition-transform duration-150 ${interactive ? 'active:scale-[0.99]' : ''} ${className}`}>
       <LiquidGlass
         displacementScale={42}
         blurAmount={blur}
