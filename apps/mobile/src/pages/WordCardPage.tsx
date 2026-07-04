@@ -9,6 +9,7 @@ import { ApiError, createWordCard } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
+import { getUserFacingErrorMessage, shouldOpenAuthForError } from '../utils/apiError'
 import { parseWords } from '../utils/wordParser'
 import PageShell from './PageShell'
 
@@ -51,7 +52,8 @@ export default function WordCardPage() {
         addRecord(result)
         navigate(`/result/${result.id}`)
       } catch (error) {
-        setError(error instanceof ApiError ? error.message : '生成失败，请稍后重试')
+        if (shouldOpenAuthForError(error)) openAuth(generate)
+        setError(getUserFacingErrorMessage(error, '生成失败，请稍后重试'))
       } finally {
         setGenerating(false)
       }
@@ -69,7 +71,7 @@ export default function WordCardPage() {
             <label className="form-label">单词或短语</label>
             <textarea className="form-input min-h-52 resize-none" value={input} onChange={(event) => setInput(event.target.value)} />
             <div className="mt-2 text-right text-xs text-ink/52">已识别 {words.length}/30 个</div>
-            {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
+            {error ? <p className="mt-3 text-sm text-coral" data-testid="word-card-error">{error}</p> : null}
             <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))} data-testid="word-card-generate">
               生成单词卡片
             </GlassButton>

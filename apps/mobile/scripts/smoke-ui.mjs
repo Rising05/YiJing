@@ -83,6 +83,20 @@ try {
   await page.waitFor(() => document.body.innerText.includes('今天要记什么？'))
   await page.click('[data-testid="home-word-card-link"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="word-card-page"]')))
+  await page.evaluate(`(() => {
+    const input = document.querySelector('textarea');
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    setter.call(input, Array.from({ length: 31 }, (_, index) => 'word' + index).join('\\n'));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`)
+  await page.click('[data-testid="word-card-generate"]')
+  await page.waitFor(() => document.querySelector('[data-testid="word-card-error"]')?.textContent?.includes('一次最多 30 个单词或短语'))
+  await page.evaluate(`(() => {
+    const input = document.querySelector('textarea');
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    setter.call(input, 'counter\\nluggage\\npassport\\nboarding gate\\nsecurity officer');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`)
   await page.click('[data-testid="word-card-generate"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="result-page"]')) && location.pathname.startsWith('/result/'), 8000)
   await page.waitFor(() => document.body.innerText.includes('单词') && document.body.innerText.includes('导出 PNG'))

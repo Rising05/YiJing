@@ -10,6 +10,7 @@ import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
 import type { TextMemoryRequest } from '../types'
+import { getUserFacingErrorMessage, shouldOpenAuthForError } from '../utils/apiError'
 import PageShell from './PageShell'
 
 export default function TextMemoryPage() {
@@ -54,7 +55,8 @@ export default function TextMemoryPage() {
         addRecord(result)
         navigate(`/result/${result.id}`)
       } catch (error) {
-        setError(error instanceof ApiError ? error.message : '生成失败，请稍后重试')
+        if (shouldOpenAuthForError(error)) openAuth(generate)
+        setError(getUserFacingErrorMessage(error, '生成失败，请稍后重试'))
       } finally {
         setGenerating(false)
       }
@@ -100,7 +102,7 @@ export default function TextMemoryPage() {
                 </select>
               </div>
             ) : null}
-            {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
+            {error ? <p className="mt-3 text-sm text-coral" data-testid="text-memory-error">{error}</p> : null}
             <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))} data-testid="text-memory-generate">
               生成记忆宫殿
             </GlassButton>

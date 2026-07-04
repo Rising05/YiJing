@@ -15,6 +15,7 @@ import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
 import type { ExportRatio } from '../services/exportImage'
 import type { GenerationResult } from '../types'
+import { getUserFacingErrorMessage, shouldOpenAuthForError } from '../utils/apiError'
 import PageShell from './PageShell'
 
 export default function GenerateResultPage() {
@@ -75,7 +76,8 @@ export default function GenerateResultPage() {
       addRecord(nextResult)
       navigate(`/result/${nextResult.id}`)
     } catch (error) {
-      setError(error instanceof ApiError ? error.message : '重新生成失败，请稍后重试')
+      if (shouldOpenAuthForError(error)) openAuth(regenerate)
+      setError(getUserFacingErrorMessage(error, '重新生成失败，请稍后重试'))
     } finally {
       setRegenerating(false)
     }
@@ -101,7 +103,7 @@ export default function GenerateResultPage() {
       <div data-testid="result-page" className="sr-only">生成结果页面</div>
       <h1 className="text-2xl font-black">{result.title}</h1>
       <p className="mt-2 text-sm text-ink/60">已自动保存到历史记录。</p>
-      {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-coral" data-testid="result-error">{error}</p> : null}
       <div className="mt-5">
         {result.type === 'text-memory' ? (
           <MemoryPalaceCanvas ref={exportRef} result={result} exportRatio={ratio} />

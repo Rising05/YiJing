@@ -102,6 +102,7 @@ npm run build:mobile
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
 - `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断和无水平溢出已纳入 UI smoke。
+- 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 
 ## 后端运行
 
@@ -338,7 +339,7 @@ npm run smoke:ui
 
 `npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
-`npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、单词生成入口和结果页。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
+`npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、单词生成入口、单词超限错误提示和结果页。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
 
 ## 后续 TODO
 
