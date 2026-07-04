@@ -89,6 +89,7 @@ npm run build:mobile
 - 后端或数据库不可用时自动回退本地 mock。
 - 生成结果保存到 localStorage。
 - 结果页“重新生成”会调用后端重新生成接口；后端不可用时基于当前结果本地 mock 再生成。
+- 历史列表和详情页支持收藏；真实后端可用时同步 MySQL，本地 mock 时写入 localStorage。
 - PNG 导出在浏览器本地合成，不上传服务器。
 
 ## 后端运行

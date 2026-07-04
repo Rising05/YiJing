@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Star, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import LiquidGlassCard from '../components/LiquidGlassCard'
-import { deleteHistory, fetchHistory } from '../services/api'
+import { deleteHistory, fetchHistory, toggleHistoryFavorite } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
 import type { GenerationResult } from '../types'
@@ -11,8 +11,9 @@ import PageShell from './PageShell'
 export default function HistoryPage() {
   const localRecords = useHistoryStore((state) => state.records)
   const removeRecord = useHistoryStore((state) => state.removeRecord)
+  const setFavorite = useHistoryStore((state) => state.setFavorite)
   const token = useAuthStore((state) => state.token)
-  const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'createdAt' | 'expiresAt'>> | null>(null)
+  const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'createdAt' | 'expiresAt' | 'isFavorite'>> | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -37,6 +38,18 @@ export default function HistoryPage() {
     removeRecord(id)
   }
 
+  async function handleFavorite(id: string, currentValue?: boolean) {
+    const nextValue = !currentValue
+    if (token && token !== 'local-mock-token') {
+      const updated = await toggleHistoryFavorite(token, id).catch(() => null)
+      const favoriteValue = updated?.isFavorite ?? nextValue
+      setRemoteRecords((items) => items?.map((item) => item.id === id ? { ...item, isFavorite: favoriteValue } : item) ?? null)
+      setFavorite(id, favoriteValue)
+      return
+    }
+    setFavorite(id, nextValue)
+  }
+
   return (
     <PageShell>
       <h1 className="text-2xl font-black">历史记录</h1>
@@ -53,9 +66,18 @@ export default function HistoryPage() {
                 <p className="truncate font-bold">{record.title}</p>
                 <p className="mt-1 text-xs text-ink/54">{record.type === 'text-memory' ? '文本记忆' : '单词卡片'} · {new Date(record.createdAt).toLocaleString()}</p>
               </Link>
-              <button className="rounded-full p-3 text-coral" onClick={() => void handleDelete(record.id)} aria-label="删除历史">
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <div className="flex shrink-0 items-center">
+                <button
+                  className={`rounded-full p-3 ${record.isFavorite ? 'text-coral' : 'text-ink/38'}`}
+                  onClick={() => void handleFavorite(record.id, record.isFavorite)}
+                  aria-label={record.isFavorite ? '取消收藏' : '收藏历史'}
+                >
+                  <Star className="h-4 w-4" fill={record.isFavorite ? 'currentColor' : 'none'} />
+                </button>
+                <button className="rounded-full p-3 text-coral" onClick={() => void handleDelete(record.id)} aria-label="删除历史">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </LiquidGlassCard>
         )) : (

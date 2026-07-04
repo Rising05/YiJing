@@ -72,6 +72,7 @@ export interface MemoryPalaceResult {
   watermarkText: string
   createdAt: string
   expiresAt: string
+  isFavorite?: boolean
   credits?: GenerationCredits
 }
 
@@ -106,6 +107,7 @@ export interface WordCardResult {
   watermarkText: string
   createdAt: string
   expiresAt: string
+  isFavorite?: boolean
   credits?: GenerationCredits
 }
 
