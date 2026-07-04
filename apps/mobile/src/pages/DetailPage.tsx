@@ -6,7 +6,7 @@ import LiquidGlassCard from '../components/LiquidGlassCard'
 import { fetchHistoryDetail, toggleHistoryFavorite } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
-import type { GenerationResult } from '../types'
+import type { GenerationResult, MemoryPalaceResult, WordCardResult } from '../types'
 import PageShell from './PageShell'
 
 export default function DetailPage() {
@@ -79,7 +79,68 @@ export default function DetailPage() {
         <Link to={`/result/${record.id}`}>
           <GlassButton className="w-full">查看结果图</GlassButton>
         </Link>
+        {record.type === 'text-memory' ? <TextMemoryDetail record={record} /> : <WordCardDetail record={record} />}
       </div>
     </PageShell>
+  )
+}
+
+function TextMemoryDetail({ record }: { record: MemoryPalaceResult }) {
+  return (
+    <section className="grid gap-3">
+      <h2 className="mt-3 text-lg font-black">记忆点详情</h2>
+      {record.points.map((point) => (
+        <LiquidGlassCard key={point.id}>
+          <div className="p-4">
+            <div className="flex items-center gap-2">
+              <span className="badge">{point.id}</span>
+              <strong>{point.keyword}</strong>
+              <span className="text-xs text-ink/50">{point.memoryMethod}</span>
+            </div>
+            <p className="mt-3 text-xs font-bold text-ink/44">原文片段</p>
+            <p className="mt-1 text-sm leading-6 text-ink/68">{point.originalText}</p>
+            <p className="mt-3 text-xs font-bold text-ink/44">视觉物体</p>
+            <p className="mt-1 text-sm leading-6 text-ink/68">{point.visualObject}</p>
+            <p className="mt-3 text-xs font-bold text-ink/44">记忆解释</p>
+            <p className="mt-1 text-sm leading-6 text-ink/68">{point.reason}</p>
+          </div>
+        </LiquidGlassCard>
+      ))}
+    </section>
+  )
+}
+
+function WordCardDetail({ record }: { record: WordCardResult }) {
+  return (
+    <section className="grid gap-3">
+      <h2 className="mt-3 text-lg font-black">单词详情</h2>
+      {record.words.map((word) => (
+        <LiquidGlassCard key={word.id}>
+          <div className="p-4">
+            <div className="flex items-center gap-2">
+              <span className="badge">{word.id}</span>
+              <strong>{word.word}</strong>
+              <span className="text-xs text-ink/50">{word.partOfSpeech}</span>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <DetailField label="音标" value={word.phonetic || '-'} />
+              <DetailField label="中文" value={word.chinese || '-'} />
+            </div>
+            <DetailField className="mt-3" label="例句" value={word.example || '-'} />
+            <DetailField className="mt-3" label="视觉物体" value={word.visualObject} />
+            <DetailField className="mt-3" label="记忆提示" value={word.memoryHint || '-'} />
+          </div>
+        </LiquidGlassCard>
+      ))}
+    </section>
+  )
+}
+
+function DetailField({ label, value, className = '' }: { label: string; value: string; className?: string }) {
+  return (
+    <div className={className}>
+      <p className="text-xs font-bold text-ink/44">{label}</p>
+      <p className="mt-1 text-sm leading-6 text-ink/68">{value}</p>
+    </div>
   )
 }

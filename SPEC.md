@@ -126,6 +126,7 @@
 | 后端校验错误码映射 | Agent-Backend | Done | 新增 ValidationPipe exceptionFactory，将 DTO 校验错误映射为 SPEC 定义的 `INPUT_TOO_LONG`、`TOO_MANY_WORDS` 和通用 `INVALID_INPUT`，并保留统一错误响应的 details | `apps/server/src/common/validation-error.ts`, `apps/server/src/main.ts`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 | 后端单词大小写不敏感去重 | Agent-Backend | Done | 后端单词卡片生成服务新增标准化流程，对单词/短语执行 trim、过滤空值和大小写不敏感去重，保持与前端 `parseWords` 行为一致 | `apps/server/src/modules/generation/generation.service.ts`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 | 背景图 URL 历史摘要保存 | Agent-Backend/Frontend | Done | 修正生成记录保存逻辑，将 ImageService 返回的 `backgroundImageUrl` 写入 `GenerationRecord.backgroundImageUrl`，并补齐前端历史 API 类型，保证真实生图后历史摘要可读取背景图 URL | `apps/server/src/modules/generation/generation.service.ts`, `apps/mobile/src/services/api.ts`, `apps/mobile/src/pages/HistoryPage.tsx`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
+| 历史详情结构化展示 | Agent-Frontend | Done | 历史详情页补全文本记忆点详情和单词详情；单词详情展示中文释义、音标、例句、视觉物体和记忆提示，满足单词卡片详情规格 | `apps/mobile/src/pages/DetailPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 
 追加记录模板：
 
