@@ -13,6 +13,7 @@
     "build": "npm run build -w apps/mobile",
     "build:mobile": "npm run build -w apps/mobile",
     "build:server": "npm run build -w apps/server",
+    "check:ai-templates": "npm run check:ai-templates -w apps/server",
     "check:content-safety": "npm run check:content-safety -w apps/server",
     "prisma:validate": "npm run prisma:validate -w apps/server",
     "prisma:migrate": "npm run prisma:migrate -w apps/server",
