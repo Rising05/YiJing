@@ -85,14 +85,21 @@ function checkImage() {
   if (provider === 'none' || provider === 'mock') {
     warn('IMAGE_MOCK_MODE=false with STORAGE_PROVIDER=none/mock will keep provider URLs instead of persisting images for 30 days')
   }
+  if (provider === 'local' && !env.PUBLIC_BASE_URL) {
+    warn('STORAGE_PROVIDER=local without PUBLIC_BASE_URL will return http://localhost:${PORT}/api/images URLs')
+  }
 }
 
 function checkStorage() {
   const provider = normalizeProvider()
-  const supported = new Set(['none', 'mock', 'oss', 's3', 's3-compatible'])
+  const supported = new Set(['none', 'mock', 'local', 'oss', 's3', 's3-compatible'])
   if (!supported.has(provider)) {
     error(`STORAGE_PROVIDER must be one of ${Array.from(supported).join(', ')}`)
     return
+  }
+
+  if (provider === 'local') {
+    info(`STORAGE_PROVIDER=local will save images under ${env.LOCAL_STORAGE_DIR || 'uploads/generated-images'}`)
   }
 
   if (provider === 'oss') {

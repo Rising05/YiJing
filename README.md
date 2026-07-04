@@ -218,9 +218,19 @@ WANX_SIZE="960*1696"
 STORAGE_PROVIDER="none"
 ```
 
-这会直接返回模型图片 URL。后续接阿里云 OSS 时，在 `apps/server/src/modules/image/storage.service.ts` 内补充上传逻辑即可，不需要改 generation service 的调用接口。
+这会直接返回模型图片 URL。开发阶段也可以启用本地持久化存储：
 
-历史单条删除和删除账号会调用 `StorageService.deleteImage()` 处理关联背景图。默认 `none/mock` 存储下没有服务端自有对象需要删除；接入 OSS 后只需要在 `StorageService` 内补充 vendor SDK 删除逻辑。
+```env
+STORAGE_PROVIDER="local"
+LOCAL_STORAGE_DIR="uploads/generated-images"
+PUBLIC_BASE_URL="http://localhost:3000"
+```
+
+`local` 模式会把通义万相返回的远程图片下载到 `apps/server/uploads/generated-images/`，并通过 `/api/images/:fileName` 只读访问。`cleanup:expired-images`、历史单条删除和删除账号都会删除对应本地文件。
+
+后续接阿里云 OSS 时，在 `apps/server/src/modules/image/storage.service.ts` 内补充上传逻辑即可，不需要改 generation service 的调用接口。
+
+历史单条删除和删除账号会调用 `StorageService.deleteImage()` 处理关联背景图。默认 `none/mock` 存储下没有服务端自有对象需要删除；`local` 模式会删除本地文件；接入 OSS 后只需要在 `StorageService` 内补充 vendor SDK 删除逻辑。
 
 预留配置：
 
@@ -310,6 +320,7 @@ npm run dev:server
 npm run check:ai-templates
 npm run check:content-safety
 npm run check:config
+npm run check:image-storage
 npm run cleanup:expired-images
 npm run smoke:api
 npm run smoke:ui
@@ -320,6 +331,8 @@ npm run smoke:ui
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
 `npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。
+
+`npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存和删除闭环。
 
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 

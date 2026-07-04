@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { rm } from 'node:fs/promises'
+import { basename, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
@@ -20,7 +21,15 @@ const { PrismaClient } = await import('@prisma/client')
 const prisma = new PrismaClient()
 
 function getProvider() {
-  return process.env.STORAGE_PROVIDER ?? 'none'
+  return (process.env.STORAGE_PROVIDER ?? 'none').toLowerCase()
+}
+
+function getPublicBaseUrl() {
+  return (process.env.PUBLIC_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`).replace(/\/$/, '')
+}
+
+function getLocalStorageDir() {
+  return resolve(scriptDir, '..', process.env.LOCAL_STORAGE_DIR ?? 'uploads/generated-images')
 }
 
 async function deleteStoredImage(imageUrl) {
@@ -33,7 +42,28 @@ async function deleteStoredImage(imageUrl) {
     return { status: 'skipped', reason: `provider:${provider}` }
   }
 
+  if (provider === 'local') {
+    const fileName = fileNameFromLocalImageUrl(imageUrl)
+    if (!fileName) {
+      return { status: 'skipped', reason: 'not_local_image_url' }
+    }
+    await rm(resolve(getLocalStorageDir(), fileName), { force: true })
+    return { status: 'deleted' }
+  }
+
   return { status: 'unsupported', reason: `delete_not_configured:${provider}` }
+}
+
+function fileNameFromLocalImageUrl(imageUrl) {
+  try {
+    const url = new URL(imageUrl, getPublicBaseUrl())
+    if (!url.pathname.startsWith('/api/images/')) return ''
+    const fileName = basename(url.pathname)
+    if (!/^[a-f0-9-]+\.(jpg|jpeg|png|webp)$/i.test(fileName)) return ''
+    return fileName
+  } catch {
+    return ''
+  }
 }
 
 function clearBackgroundImage(resultJson) {
