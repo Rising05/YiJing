@@ -99,7 +99,7 @@
 | Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-03 | OpenAI-compatible LLM client、prompt 包、JSON 重试解析、schema/anchor 校验已实现；真实调用待 API Key 验证 |
 | Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI | 2026-07-03 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象已实现；真实调用待 API Key/OSS 配置验证 |
 | Phase 5 iOS 打包 | In Progress | Agent-Release | 2026-07-03 | Capacitor iOS 依赖、脚本、配置和占位图标/启动页已完成；`cap add ios` 因 CocoaPods/完整 Xcode 缺失阻塞 |
-| QA 回归验收 | Not Started | Agent-QA | - | - |
+| QA 回归验收 | In Progress | Agent-QA | 2026-07-04 | 静态检查（build:server、build:mobile、prisma:validate、smoke 语法）通过；运行时 smoke test 因 MySQL 未启动阻塞 |
 
 状态枚举：`Not Started`、`In Progress`、`Blocked`、`Ready for QA`、`Done`。
 
@@ -129,6 +129,8 @@
 | 历史详情结构化展示 | Agent-Frontend | Done | 历史详情页补全文本记忆点详情和单词详情；单词详情展示中文释义、音标、例句、视觉物体和记忆提示，满足单词卡片详情规格 | `apps/mobile/src/pages/DetailPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 | 设置页危险操作确认 | Agent-Frontend | Done | 清除缓存和删除账号操作新增页面内二次确认面板；删除账号确认时显示影响范围并保留加载状态，降低误触风险 | `apps/mobile/src/pages/SettingsPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 | 历史单条删除确认 | Agent-Frontend | Done | 历史列表每条记录删除前新增卡片内二次确认；取消不会影响收藏或详情入口，确认后继续调用后端删除并移除本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
+| 共享类型包 `packages/shared` | Agent-AI | Done | 新增 `packages/shared/`，集中管理 SPEC §9 类型定义、§10 模板常量、§15 错误码；通过 root workspace 自动链接，前后端可复用 | `packages/shared/**`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate`; `ls packages/shared/src/` | 2026-07-04 |
+| QA 静态回归验证 | Agent-QA | Done | 全量构建（server + mobile）、Prisma schema 校验、smoke 脚本语法检查通过；运行时 smoke 因 Docker/MySQL 未就绪待验证 | `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |
 
 追加记录模板：
 

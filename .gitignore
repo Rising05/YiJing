@@ -12,3 +12,4 @@ apps/mobile/tailwind.config.js
 apps/mobile/tailwind.config.d.ts
 apps/mobile/vite.config.js
 apps/mobile/vite.config.d.ts
+.reasonix/
