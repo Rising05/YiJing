@@ -95,6 +95,7 @@ npm run build:mobile
 - PNG 导出在浏览器本地合成，不上传服务器。
 - 后端校验错误会映射为稳定业务码，例如 `INPUT_TOO_LONG`、`TOO_MANY_WORDS`、`INVALID_INPUT`。
 - 单词/短语在前端和后端都会 trim 并按大小写不敏感规则去重。
+- 真实生图返回的背景图 URL 会同时保存到生成详情 JSON 和历史摘要字段。
 
 ## 后端运行
 

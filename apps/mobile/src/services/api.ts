@@ -74,7 +74,7 @@ export function regenerateGeneration(token: string, id: string) {
 }
 
 export function fetchHistory(token: string) {
-  return request<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'createdAt' | 'expiresAt' | 'isFavorite'>>>('/history', {
+  return request<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'backgroundImageUrl' | 'createdAt' | 'expiresAt' | 'isFavorite'>>>('/history', {
     headers: authHeaders(token),
   })
 }
@@ -93,7 +93,7 @@ export function deleteHistory(token: string, id: string) {
 }
 
 export function toggleHistoryFavorite(token: string, id: string) {
-  return request<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'createdAt' | 'expiresAt' | 'isFavorite'>>(`/history/${id}/favorite`, {
+  return request<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'backgroundImageUrl' | 'createdAt' | 'expiresAt' | 'isFavorite'>>(`/history/${id}/favorite`, {
     method: 'PATCH',
     headers: authHeaders(token),
   })

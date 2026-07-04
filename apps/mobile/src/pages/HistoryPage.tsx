@@ -13,7 +13,7 @@ export default function HistoryPage() {
   const removeRecord = useHistoryStore((state) => state.removeRecord)
   const setFavorite = useHistoryStore((state) => state.setFavorite)
   const token = useAuthStore((state) => state.token)
-  const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'createdAt' | 'expiresAt' | 'isFavorite'>> | null>(null)
+  const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'backgroundImageUrl' | 'createdAt' | 'expiresAt' | 'isFavorite'>> | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {

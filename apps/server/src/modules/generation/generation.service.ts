@@ -30,6 +30,7 @@ export class GenerationService {
       inputWords: Prisma.JsonNull,
       templateId: result.templateId,
       result,
+      backgroundImageUrl: imageResult.backgroundImageUrl,
       imagePrompt: result.imagePrompt,
       promptUsed: aiResult.promptUsed,
       aiProvider: aiResult.provider,
@@ -60,6 +61,7 @@ export class GenerationService {
       inputWords: words,
       templateId: result.templateId,
       result,
+      backgroundImageUrl: imageResult.backgroundImageUrl,
       imagePrompt: result.imagePrompt,
       promptUsed: aiResult.promptUsed,
       aiProvider: aiResult.provider,
@@ -126,6 +128,7 @@ export class GenerationService {
       inputWords: Prisma.InputJsonValue | typeof Prisma.JsonNull
       templateId: string
       result: Record<string, unknown>
+      backgroundImageUrl: string
       imagePrompt: string
       promptUsed: string
       aiProvider: string
@@ -158,7 +161,7 @@ export class GenerationService {
           inputText: input.inputText,
           inputWords: input.inputWords,
           templateId: input.templateId,
-          backgroundImageUrl: '',
+          backgroundImageUrl: input.backgroundImageUrl,
           resultJson: input.result as Prisma.InputJsonValue,
           imagePrompt: input.imagePrompt,
           promptUsed: input.promptUsed,
