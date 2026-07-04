@@ -4,6 +4,7 @@ import ExportImageButton from '../components/ExportImageButton'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import MemoryPalaceCanvas from '../components/MemoryPalaceCanvas'
+import ShareImageButton from '../components/ShareImageButton'
 import WordMemoryCard from '../components/WordMemoryCard'
 import { createMockMemoryResult } from '../mocks/memoryMock'
 import { createMockWordResult } from '../mocks/wordMock'
@@ -116,6 +117,12 @@ export default function GenerateResultPage() {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <ExportImageButton targetRef={exportRef} ratio={ratio} />
+        <ShareImageButton targetRef={exportRef} ratio={ratio} />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Link to={`/detail/${result.id}`}>
+          <GlassButton className="w-full" variant="secondary">查看详情</GlassButton>
+        </Link>
         <GlassButton className="w-full" loading={regenerating} onClick={() => (user ? void regenerate() : openAuth())}>
           重新生成
         </GlassButton>
