@@ -134,7 +134,7 @@ npm run prisma:validate
 
 ## MySQL 与 Prisma
 
-启动 MySQL：
+启动 MySQL。本仓库当前开发配置使用宿主机 `3307` 映射到容器 `3306`，避免和本机已有 MySQL 冲突：
 
 ```bash
 docker compose up -d mysql
@@ -146,10 +146,12 @@ docker compose up -d mysql
 npm run prisma:migrate
 ```
 
-当前已知环境阻塞：
+当前已验证状态：
 
-- 如果 Docker Desktop/daemon 未启动，`docker compose up -d mysql` 会失败。
-- 当前开发记录里 Docker CLI 可用，但 daemon socket 不存在。
+- MySQL 容器名：`yijing-mysql`。
+- 本地连接：`mysql://yijing:yijing@localhost:3307/yijing`。
+- Prisma migration 已生成在 `apps/server/prisma/migrations/20260704033501_init/`。
+- 后端 smoke test 已在 MySQL 可用时通过。
 
 ## Mock 模式
 
@@ -299,16 +301,14 @@ npm run dev:server
 npm run smoke:api
 ```
 
-`npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
+`npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
 ## 后续 TODO
 
-- 启动 Docker daemon 后完成 MySQL migrate 验证。
-- 启动 MySQL 后运行 `npm run smoke:api` 完成后端接口主流程验证。
 - 配置真实 LLM API Key 后验证真实 JSON 生成。
 - 配置通义万相 API Key 后验证真实生图。
 - 接入阿里云 OSS 或更合适的国内对象存储。
 - 安装完整 Xcode + CocoaPods 后生成 iOS 工程。
-- Android 平台初始化与 AAB 打包。
+- Android AAB/APK 打包。
 - 正式登录：手机号短信 + 微信移动 App 登录。
 - 正式合规文案与备案信息。
