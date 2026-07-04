@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { GenerationRecord } from '@prisma/client'
+import { StorageService } from '../image/storage.service'
 import { PrismaService } from '../prisma/prisma.service'
 
 @Injectable()
 export class HistoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   async list(userId: string) {
     const records = await this.prisma.generationRecord.findMany({
@@ -20,7 +24,8 @@ export class HistoryService {
   }
 
   async remove(userId: string, id: string) {
-    await this.findOwnedRecord(userId, id)
+    const record = await this.findOwnedRecord(userId, id)
+    await this.storage.deleteImage(record.backgroundImageUrl)
     await this.prisma.generationRecord.update({
       where: { id },
       data: { deletedAt: new Date() },

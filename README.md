@@ -220,6 +220,8 @@ STORAGE_PROVIDER="none"
 
 这会直接返回模型图片 URL。后续接阿里云 OSS 时，在 `apps/server/src/modules/image/storage.service.ts` 内补充上传逻辑即可，不需要改 generation service 的调用接口。
 
+历史单条删除和删除账号会调用 `StorageService.deleteImage()` 处理关联背景图。默认 `none/mock` 存储下没有服务端自有对象需要删除；接入 OSS 后只需要在 `StorageService` 内补充 vendor SDK 删除逻辑。
+
 预留配置：
 
 ```env
@@ -307,12 +309,15 @@ npm run dev:mobile
 npm run dev:server
 npm run check:ai-templates
 npm run check:content-safety
+npm run cleanup:expired-images
 npm run smoke:api
 ```
 
 `npm run check:ai-templates` 需要先执行 `npm run build:server`，用于验证后端 AI prompt/校验层使用的是 `packages/shared` 中的 10 个 canonical templates，避免真实 LLM 模式下模板数量和 SPEC 分叉。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
+
+`npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 
 `npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
