@@ -285,11 +285,15 @@ npm run build:server
 npm run prisma:validate
 npm run dev:mobile
 npm run dev:server
+npm run smoke:api
 ```
+
+`npm run smoke:api` 会验证后端主流程：健康检查、测试登录、文本生成、单词生成、历史列表、详情、收藏、删除历史和删除账号。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
 ## 后续 TODO
 
 - 启动 Docker daemon 后完成 MySQL migrate 验证。
+- 启动 MySQL 后运行 `npm run smoke:api` 完成后端接口主流程验证。
 - 配置真实 LLM API Key 后验证真实 JSON 生成。
 - 配置通义万相 API Key 后验证真实生图。
 - 接入阿里云 OSS 或更合适的国内对象存储。

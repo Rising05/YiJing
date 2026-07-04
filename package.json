@@ -15,6 +15,7 @@
     "build:server": "npm run build -w apps/server",
     "prisma:validate": "npm run prisma:validate -w apps/server",
     "prisma:migrate": "npm run prisma:migrate -w apps/server",
+    "smoke:api": "npm run smoke:api -w apps/server",
     "preview": "npm run preview -w apps/mobile"
   }
 }

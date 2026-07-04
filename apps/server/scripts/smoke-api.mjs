@@ -1,0 +1,91 @@
+const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000/api'
+
+async function request(path, options = {}) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  })
+  const body = await response.json().catch(() => null)
+  if (!response.ok) {
+    const message = body?.message ?? `${response.status} ${response.statusText}`
+    throw new Error(`${options.method ?? 'GET'} ${path} failed: ${message}`)
+  }
+  return body
+}
+
+function auth(token) {
+  return { Authorization: `Bearer ${token}` }
+}
+
+async function main() {
+  console.log(`Smoke target: ${baseUrl}`)
+
+  const health = await request('/health')
+  console.log('health:', health.ok ? 'ok' : 'failed')
+
+  const login = await request('/auth/test-login', {
+    method: 'POST',
+    body: JSON.stringify({ phone: '13800000000', code: '123456' }),
+  })
+  const token = login.token
+  if (!token) throw new Error('login did not return token')
+  console.log('login: ok')
+
+  const textResult = await request('/generation/text-memory', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      inputText: '道可道，非常道；名可名，非常名。无名，万物之始；有名，万物之母。',
+      contentType: 'ancient_text',
+      scenePreference: 'auto',
+    }),
+  })
+  if (!textResult.id || textResult.type !== 'text-memory') throw new Error('text generation returned invalid result')
+  console.log('text-memory:', textResult.id)
+
+  const wordResult = await request('/generation/word-card', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      words: ['passport', 'luggage', 'boarding gate'],
+      theme: 'auto',
+      cardMode: 'scene',
+    }),
+  })
+  if (!wordResult.id || wordResult.type !== 'word-card') throw new Error('word generation returned invalid result')
+  console.log('word-card:', wordResult.id)
+
+  const history = await request('/history', { headers: auth(token) })
+  if (!Array.isArray(history) || history.length < 2) throw new Error('history did not include generated records')
+  console.log('history:', history.length)
+
+  const detail = await request(`/history/${textResult.id}`, { headers: auth(token) })
+  if (detail.id !== textResult.id) throw new Error('history detail returned wrong record')
+  console.log('detail: ok')
+
+  await request(`/history/${wordResult.id}/favorite`, {
+    method: 'PATCH',
+    headers: auth(token),
+  })
+  console.log('favorite: ok')
+
+  await request(`/history/${wordResult.id}`, {
+    method: 'DELETE',
+    headers: auth(token),
+  })
+  console.log('delete history: ok')
+
+  await request('/user/me', {
+    method: 'DELETE',
+    headers: auth(token),
+  })
+  console.log('delete account: ok')
+}
+
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

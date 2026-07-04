@@ -116,6 +116,7 @@
 | Phase 5 iOS 项目准备 | Agent-Release | Done | 加入 `@capacitor/ios`、iOS 同步脚本、Capacitor iOS 配置、图标/启动页 SVG 占位和 iOS 环境说明；Xcode 工程生成因本机环境缺口待执行 | `apps/mobile/package.json`, `apps/mobile/capacitor.config.ts`, `apps/mobile/IOS_SETUP.md`, `apps/mobile/src/assets/**`, `.gitignore`, `SPEC.md` | `npm run build:mobile`; `npm run cap:add:ios -w apps/mobile` 返回 CocoaPods 缺失错误 | 2026-07-03 |
 | README 使用文档 | Agent-Product | Done | 新增项目介绍、技术栈、本地运行、mock 模式、LLM/万相接入、iOS/Android 打包和大陆发布注意事项 | `README.md`, `SPEC.md` | 人工检查；`npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 历史与账号 API 联调适配 | Agent-Frontend | Done | 历史列表、历史详情、删除历史和删除账号优先请求后端 API，后端不可用时回退本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `apps/mobile/src/pages/DetailPage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
+| 后端 API Smoke Test | Agent-QA | Done | 新增后端主流程 smoke 脚本，覆盖健康检查、测试登录、文本生成、单词生成、历史、收藏、删除历史和删除账号 | `apps/server/scripts/smoke-api.mjs`, `package.json`, `apps/server/package.json`, `README.md`, `SPEC.md` | `node --check apps/server/scripts/smoke-api.mjs`; `npm run build:server`; `npm run prisma:validate` | 2026-07-04 |
 
 追加记录模板：
 
