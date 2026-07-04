@@ -99,6 +99,7 @@ npm run build:mobile
 - 历史详情页会展示文本记忆点详情，以及单词的中文释义、音标、例句、视觉物体和记忆提示。
 - 清除缓存和删除账号都会先显示二次确认，减少误触风险。
 - 删除单条历史记录前会在对应卡片内显示确认操作。
+- Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 
 ## 后端运行
 
@@ -265,6 +266,8 @@ open -a "Android Studio" apps/mobile/android
 ```
 
 详见 `apps/mobile/ANDROID_SETUP.md`。Android AAB 输出会在 Android Studio/JDK 环境可用后继续配置。
+
+当前 Android launcher 图标已生成到 `apps/mobile/android/app/src/main/res/mipmap-*`，源图保存在 `apps/mobile/src/assets/logo.png`。
 
 ## 中国大陆发布注意事项
 
