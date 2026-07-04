@@ -16,6 +16,9 @@ export default function HomePage() {
         <div>
           <p className="text-sm font-semibold text-ink/54">{user ? `${user.nickname}，欢迎回来` : '游客预览模式'}</p>
           <h1 className="mt-1 text-3xl font-black tracking-normal">今天要记什么？</h1>
+          {user?.remainingCredits !== undefined ? (
+            <p className="mt-2 text-xs font-bold text-ink/50">剩余生成 {user.remainingCredits} 次</p>
+          ) : null}
         </div>
         <Sparkles className="h-8 w-8 text-coral" />
       </div>

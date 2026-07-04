@@ -33,6 +33,9 @@ export default function SettingsPage() {
           <div className="p-4">
             <p className="text-sm font-bold">账号</p>
             <p className="mt-1 text-sm text-ink/60">{user ? `${user.nickname} · ${user.phone}` : '未登录'}</p>
+            {user?.remainingCredits !== undefined ? (
+              <p className="mt-2 text-xs font-semibold text-ink/50">剩余生成次数：{user.remainingCredits}</p>
+            ) : null}
           </div>
         </LiquidGlassCard>
         <GlassButton variant="secondary" onClick={clearCache}>清除缓存</GlassButton>

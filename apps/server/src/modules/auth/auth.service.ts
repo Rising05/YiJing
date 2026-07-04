@@ -17,7 +17,19 @@ export class AuthService {
 
     const user = await this.prisma.user.upsert({
       where: { phone: dto.phone },
-      update: { nickname: '测试用户', deletedAt: null },
+      update: {
+        nickname: '测试用户',
+        deletedAt: null,
+        quota: {
+          upsert: {
+            create: {
+              remainingCredits: 20,
+              usedCredits: 0,
+            },
+            update: {},
+          },
+        },
+      },
       create: {
         phone: dto.phone,
         nickname: '测试用户',

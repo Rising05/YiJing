@@ -4,7 +4,7 @@ import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import LoadingGenerate from '../components/LoadingGenerate'
 import { createMockWordResult } from '../mocks/wordMock'
-import { createWordCard } from '../services/api'
+import { ApiError, createWordCard } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -17,6 +17,8 @@ export default function WordCardPage() {
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token)
   const openAuth = useAuthStore((state) => state.openAuth)
+  const consumeCredit = useAuthStore((state) => state.consumeCredit)
+  const setRemainingCredits = useAuthStore((state) => state.setRemainingCredits)
   const setGenerating = useGenerationStore((state) => state.setGenerating)
   const setCurrentResult = useGenerationStore((state) => state.setCurrentResult)
   const addRecord = useHistoryStore((state) => state.addRecord)
@@ -27,17 +29,31 @@ export default function WordCardPage() {
   function generate() {
     if (!words.length) return setError('请输入至少一个单词或短语')
     if (words.length > 30) return setError('一次最多 30 个单词或短语，请减少输入')
+    if (user?.remainingCredits !== undefined && user.remainingCredits <= 0) return setError('生成次数不足，请稍后补充次数')
     setError('')
     setGenerating(true)
     window.setTimeout(async () => {
       const request = { words, theme: 'auto' as const, cardMode: 'scene' as const }
-      const result = token && token !== 'local-mock-token'
-        ? await createWordCard(token, request).catch(() => createMockWordResult(request))
-        : createMockWordResult(request)
-      setCurrentResult(result)
-      addRecord(result)
-      setGenerating(false)
-      navigate(`/result/${result.id}`)
+      try {
+        const result = token && token !== 'local-mock-token'
+          ? await createWordCard(token, request).catch((error) => {
+              if (error instanceof ApiError) throw error
+              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+              return createMockWordResult(request)
+            })
+          : (() => {
+              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+              return createMockWordResult(request)
+            })()
+        if (result.credits) setRemainingCredits(result.credits.remaining)
+        setCurrentResult(result)
+        addRecord(result)
+        navigate(`/result/${result.id}`)
+      } catch (error) {
+        setError(error instanceof ApiError ? error.message : '生成失败，请稍后重试')
+      } finally {
+        setGenerating(false)
+      }
     }, 520)
   }
 

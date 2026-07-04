@@ -60,7 +60,7 @@
 - 包管理器：npm。
 - 前端技术：React + Vite + TypeScript + Tailwind CSS + Capacitor。
 - 后端技术：NestJS + Prisma + MySQL。
-- 生成次数/积分：预留。
+- 生成次数/积分：MVP 默认测试账号 20 次；文本生成、单词生成、重新生成每次成功消耗 1 次。
 - 重新生成：需要重新消耗次数。
 - 生成失败：用户手动重试。
 - 生成结果：自动保存历史。
@@ -118,6 +118,7 @@
 | 历史与账号 API 联调适配 | Agent-Frontend | Done | 历史列表、历史详情、删除历史和删除账号优先请求后端 API，后端不可用时回退本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `apps/mobile/src/pages/DetailPage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 后端 API Smoke Test | Agent-QA | Done | 新增后端主流程 smoke 脚本，覆盖健康检查、测试登录、文本生成、单词生成、历史、收藏、删除历史和删除账号 | `apps/server/scripts/smoke-api.mjs`, `package.json`, `apps/server/package.json`, `README.md`, `SPEC.md` | `node --check apps/server/scripts/smoke-api.mjs`; `npm run build:server`; `npm run prisma:validate` | 2026-07-04 |
 | Android Capacitor 工程准备 | Agent-Release | Done | 加入 `@capacitor/android`、Android 同步脚本并生成 `apps/mobile/android` 工程；AAB/APK 构建待 Android Studio/JDK 环境 | `apps/mobile/android/**`, `apps/mobile/package.json`, `apps/mobile/ANDROID_SETUP.md`, `.gitignore`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run cap:add:android -w apps/mobile` | 2026-07-04 |
+| 生成次数/额度扣减 | Agent-Backend/Frontend | Done | 后端测试登录自动创建/补齐 20 次额度；生成记录保存事务内扣减 1 次并返回剩余额度；前端首页/我的展示剩余次数，本地 mock 路径同步扣减，业务错误不再被 mock 回退绕过 | `apps/server/src/modules/auth/auth.service.ts`, `apps/server/src/modules/generation/generation.service.ts`, `apps/mobile/src/stores/authStore.ts`, `apps/mobile/src/pages/TextMemoryPage.tsx`, `apps/mobile/src/pages/WordCardPage.tsx`, `apps/mobile/src/pages/HomePage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `apps/mobile/src/types/index.ts`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-04 |
 
 追加记录模板：
 

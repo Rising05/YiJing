@@ -53,6 +53,11 @@ export interface MemoryPoint {
   label: string
 }
 
+export interface GenerationCredits {
+  remaining: number
+  used: number
+}
+
 export interface MemoryPalaceResult {
   id: string
   title: string
@@ -67,6 +72,7 @@ export interface MemoryPalaceResult {
   watermarkText: string
   createdAt: string
   expiresAt: string
+  credits?: GenerationCredits
 }
 
 export interface WordCardRequest {
@@ -100,6 +106,7 @@ export interface WordCardResult {
   watermarkText: string
   createdAt: string
   expiresAt: string
+  credits?: GenerationCredits
 }
 
 export type GenerationResult = MemoryPalaceResult | WordCardResult

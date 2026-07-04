@@ -6,6 +6,7 @@ interface User {
   id: string
   nickname: string
   phone: string
+  remainingCredits?: number
 }
 
 interface AuthState {
@@ -17,6 +18,8 @@ interface AuthState {
   closeAuth: () => void
   login: (phone: string, code: string) => Promise<boolean>
   logout: () => void
+  setRemainingCredits: (remainingCredits: number) => void
+  consumeCredit: () => boolean
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -34,13 +37,23 @@ export const useAuthStore = create<AuthState>()(
           const response = await testLogin(phone, code)
           set({ user: response.user, token: response.token, isAuthOpen: false })
         } catch {
-          set({ user: { id: 'test-user', nickname: '测试用户', phone }, token: 'local-mock-token', isAuthOpen: false })
+          set({ user: { id: 'test-user', nickname: '测试用户', phone, remainingCredits: 20 }, token: 'local-mock-token', isAuthOpen: false })
         }
         get().pendingAction?.()
         set({ pendingAction: null })
         return true
       },
       logout: () => set({ user: null, token: null }),
+      setRemainingCredits: (remainingCredits) =>
+        set((state) => (state.user ? { user: { ...state.user, remainingCredits } } : {})),
+      consumeCredit: () => {
+        const user = get().user
+        if (!user) return false
+        const current = user.remainingCredits ?? 20
+        if (current <= 0) return false
+        set({ user: { ...user, remainingCredits: current - 1 } })
+        return true
+      },
     }),
     { name: 'memory-palace-auth' },
   ),

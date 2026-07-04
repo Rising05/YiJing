@@ -4,7 +4,7 @@ import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
 import LoadingGenerate from '../components/LoadingGenerate'
 import { createMockMemoryResult } from '../mocks/memoryMock'
-import { createTextMemory } from '../services/api'
+import { ApiError, createTextMemory } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -20,6 +20,8 @@ export default function TextMemoryPage() {
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token)
   const openAuth = useAuthStore((state) => state.openAuth)
+  const consumeCredit = useAuthStore((state) => state.consumeCredit)
+  const setRemainingCredits = useAuthStore((state) => state.setRemainingCredits)
   const setGenerating = useGenerationStore((state) => state.setGenerating)
   const setCurrentResult = useGenerationStore((state) => state.setCurrentResult)
   const addRecord = useHistoryStore((state) => state.addRecord)
@@ -30,17 +32,31 @@ export default function TextMemoryPage() {
     const trimmed = inputText.trim()
     if (!trimmed) return setError('请输入需要背诵的文本')
     if (trimmed.length > 500) return setError('文本最多 500 字，请缩短后再生成')
+    if (user?.remainingCredits !== undefined && user.remainingCredits <= 0) return setError('生成次数不足，请稍后补充次数')
     const request = { inputText: trimmed, contentType, scenePreference }
     setError('')
     setGenerating(true)
     window.setTimeout(async () => {
-      const result = token && token !== 'local-mock-token'
-        ? await createTextMemory(token, request).catch(() => createMockMemoryResult(request))
-        : createMockMemoryResult(request)
-      setCurrentResult(result)
-      addRecord(result)
-      setGenerating(false)
-      navigate(`/result/${result.id}`)
+      try {
+        const result = token && token !== 'local-mock-token'
+          ? await createTextMemory(token, request).catch((error) => {
+              if (error instanceof ApiError) throw error
+              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+              return createMockMemoryResult(request)
+            })
+          : (() => {
+              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+              return createMockMemoryResult(request)
+            })()
+        if (result.credits) setRemainingCredits(result.credits.remaining)
+        setCurrentResult(result)
+        addRecord(result)
+        navigate(`/result/${result.id}`)
+      } catch (error) {
+        setError(error instanceof ApiError ? error.message : '生成失败，请稍后重试')
+      } finally {
+        setGenerating(false)
+      }
     }, 520)
   }
 

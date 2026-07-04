@@ -17,6 +17,7 @@ export class GenerationService {
 
   async createTextMemory(userId: string, dto: TextMemoryDto) {
     assertSafeLearningContent(dto.inputText)
+    await this.ensureQuota(userId)
     const aiResult = await this.aiService.createTextMemoryResult(dto)
     const result = aiResult.result
     const imageResult = await this.imageService.generateBackground({ prompt: result.imagePrompt })
@@ -46,6 +47,7 @@ export class GenerationService {
       throw new BadRequestException({ code: 'TOO_MANY_WORDS', message: '一次最多 30 个单词或短语，请减少输入。' })
     }
     assertSafeLearningContent(words.join(' '))
+    await this.ensureQuota(userId)
     const aiResult = await this.aiService.createWordCardResult({ ...dto, words })
     const result = aiResult.result
     const imageResult = await this.imageService.generateBackground({ prompt: result.imagePrompt })
@@ -85,6 +87,22 @@ export class GenerationService {
     return this.createWordCard(userId, { words, theme: 'auto', cardMode: 'scene' })
   }
 
+  private async ensureQuota(userId: string) {
+    const quota = await this.prisma.userQuota.upsert({
+      where: { userId },
+      update: {},
+      create: {
+        userId,
+        remainingCredits: 20,
+        usedCredits: 0,
+      },
+    })
+    if (quota.remainingCredits <= 0) {
+      throw new BadRequestException({ code: 'INSUFFICIENT_CREDITS', message: '生成次数不足，请稍后补充次数。' })
+    }
+    return quota
+  }
+
   private async saveRecord(
     userId: string,
     input: {
@@ -106,51 +124,70 @@ export class GenerationService {
     },
   ) {
     const expiresAt = new Date(Date.now() + 30 * 86400000)
-    const record = await this.prisma.generationRecord.create({
-      data: {
-        userId,
-        type: input.type,
-        title: input.title,
-        contentType: input.contentType,
-        inputText: input.inputText,
-        inputWords: input.inputWords,
-        templateId: input.templateId,
-        backgroundImageUrl: '',
-        resultJson: input.result as Prisma.InputJsonValue,
-        imagePrompt: input.imagePrompt,
-        promptUsed: input.promptUsed,
-        expiresAt,
-      },
-    })
-    await this.prisma.aiUsageLog.create({
-      data: {
-        userId,
-        recordId: record.id,
-        provider: input.aiProvider,
-        model: input.aiModel,
-        status: 'success',
-        imageCount: 0,
-        rawPrompt: process.env.NODE_ENV === 'production' ? null : input.promptUsed,
-        rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.rawResponse ?? Prisma.JsonNull,
-      },
-    })
-    await this.prisma.aiUsageLog.create({
-      data: {
-        userId,
-        recordId: record.id,
-        provider: input.imageProvider,
-        model: input.imageModel,
-        status: 'success',
-        imageCount: input.imageProvider === 'mock' ? 0 : 1,
-        rawPrompt: process.env.NODE_ENV === 'production' ? null : input.imagePrompt,
-        rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.imageRawResponse ?? Prisma.JsonNull,
-      },
+    const { record, quota } = await this.prisma.$transaction(async (tx) => {
+      const quotaUpdate = await tx.userQuota.updateMany({
+        where: { userId, remainingCredits: { gt: 0 } },
+        data: {
+          remainingCredits: { decrement: 1 },
+          usedCredits: { increment: 1 },
+        },
+      })
+      if (quotaUpdate.count !== 1) {
+        throw new BadRequestException({ code: 'INSUFFICIENT_CREDITS', message: '生成次数不足，请稍后补充次数。' })
+      }
+
+      const record = await tx.generationRecord.create({
+        data: {
+          userId,
+          type: input.type,
+          title: input.title,
+          contentType: input.contentType,
+          inputText: input.inputText,
+          inputWords: input.inputWords,
+          templateId: input.templateId,
+          backgroundImageUrl: '',
+          resultJson: input.result as Prisma.InputJsonValue,
+          imagePrompt: input.imagePrompt,
+          promptUsed: input.promptUsed,
+          expiresAt,
+        },
+      })
+      await tx.aiUsageLog.create({
+        data: {
+          userId,
+          recordId: record.id,
+          provider: input.aiProvider,
+          model: input.aiModel,
+          status: 'success',
+          imageCount: 0,
+          rawPrompt: process.env.NODE_ENV === 'production' ? null : input.promptUsed,
+          rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.rawResponse ?? Prisma.JsonNull,
+        },
+      })
+      await tx.aiUsageLog.create({
+        data: {
+          userId,
+          recordId: record.id,
+          provider: input.imageProvider,
+          model: input.imageModel,
+          status: 'success',
+          imageCount: input.imageProvider === 'mock' ? 0 : 1,
+          rawPrompt: process.env.NODE_ENV === 'production' ? null : input.imagePrompt,
+          rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.imageRawResponse ?? Prisma.JsonNull,
+        },
+      })
+      const quota = await tx.userQuota.findUniqueOrThrow({ where: { userId } })
+      return { record, quota }
     })
     return {
       ...input.result,
       id: record.id,
       createdAt: record.createdAt.toISOString(),
       expiresAt: record.expiresAt.toISOString(),
+      credits: {
+        remaining: quota.remainingCredits,
+        used: quota.usedCredits,
+      },
     }
   }
 }
