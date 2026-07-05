@@ -23,6 +23,7 @@ checkCore()
 checkLlm()
 checkImage()
 checkStorage()
+checkCors()
 checkProduction()
 
 const errors = findings.filter((item) => item.level === 'error')
@@ -150,6 +151,38 @@ function checkStorage() {
   }
 }
 
+function checkCors() {
+  const origins = csv('ALLOWED_ORIGINS')
+  if (!origins.length) {
+    if (productionMode) {
+      error('NODE_ENV=production requires ALLOWED_ORIGINS to list trusted app or web origins')
+    } else {
+      info('ALLOWED_ORIGINS is empty; development server will reflect request origins for local testing')
+    }
+    return
+  }
+
+  if (origins.includes('*')) {
+    if (productionMode) {
+      error('NODE_ENV=production must not use ALLOWED_ORIGINS=*')
+    } else {
+      warn('ALLOWED_ORIGINS=* reflects all origins; keep this out of production')
+    }
+    return
+  }
+
+  for (const origin of origins) {
+    try {
+      const url = new URL(origin)
+      if (!['http:', 'https:', 'capacitor:', 'ionic:'].includes(url.protocol)) {
+        error(`ALLOWED_ORIGINS contains unsupported origin scheme: ${origin}`)
+      }
+    } catch {
+      error(`ALLOWED_ORIGINS contains an invalid origin: ${origin}`)
+    }
+  }
+}
+
 function checkProduction() {
   if (!productionMode) return
 
@@ -212,6 +245,13 @@ function flag(name, defaultValue) {
 
 function normalizeProvider() {
   return (env.STORAGE_PROVIDER ?? 'none').trim().toLowerCase()
+}
+
+function csv(name) {
+  return (env[name] ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
 }
 
 function requireValue(name, message) {

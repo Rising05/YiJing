@@ -136,7 +136,7 @@ cp apps/server/.env.production.example apps/server/.env.production
 ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production
 ```
 
-生产检查会要求 `NODE_ENV=production`、真实 JWT Secret、关闭 AI/生图 mock、配置 LLM/通义万相 Key，并确保图片有 30 天保留所需的持久化存储配置。脚本只报告缺失项和风险，不会打印密钥值。
+生产检查会要求 `NODE_ENV=production`、真实 JWT Secret、`ALLOWED_ORIGINS` CORS 白名单、关闭 AI/生图 mock、配置 LLM/通义万相 Key，并确保图片有 30 天保留所需的持久化存储配置。脚本只报告缺失项和风险，不会打印密钥值。
 
 启动后端：
 
@@ -369,6 +369,7 @@ npm run check:ai-templates
 npm run check:ai-retry
 npm run check:content-safety
 npm run check:config
+npm run check:cors-config
 npm run check:error-codes
 npm run check:image-prompts
 npm run check:image-storage
@@ -389,11 +390,13 @@ npm run smoke:ui
 
 `npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
-`npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。生产部署前使用 `ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production`，会额外禁止 mock、占位密钥和 localhost 图片公开地址。
+`npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。生产部署前使用 `ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production`，会额外禁止 mock、占位密钥、缺失 CORS 白名单和 localhost 图片公开地址。
+
+`npm run check:cors-config` 需要先执行 `npm run build:server`，用于验证后端 CORS 行为：开发环境未配置 `ALLOWED_ORIGINS` 时允许本地调试，生产环境必须配置明确来源列表并拒绝 `*` 通配符。
 
 `npm run check:production-config` 会用临时 env 自测生产配置规则：一份安全生产配置必须通过，一份 mock/占位/localhost 配置必须失败。这个检查不需要真实 API Key，也不会连接外部服务。
 
