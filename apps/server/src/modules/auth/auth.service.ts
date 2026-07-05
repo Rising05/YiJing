@@ -12,7 +12,7 @@ export class AuthService {
 
   async testLogin(dto: TestLoginDto) {
     if (dto.phone !== '13800000000' || dto.code !== '123456') {
-      throw new BadRequestException({ code: 'INVALID_TEST_CODE', message: '请使用测试手机号 13800000000 和验证码 123456' })
+      throw new BadRequestException({ code: 'INVALID_INPUT', message: '请使用测试手机号 13800000000 和验证码 123456' })
     }
 
     const user = await this.prisma.user.upsert({

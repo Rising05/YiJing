@@ -59,6 +59,12 @@ async function main() {
   }, 'UNAUTHORIZED')
   console.log('unauthorized generation rejected: ok')
 
+  await expectRequestFailure('/auth/test-login', {
+    method: 'POST',
+    body: JSON.stringify({ phone: '13800000000', code: '000000' }),
+  }, 'INVALID_INPUT')
+  console.log('invalid login rejected: ok')
+
   const login = await request('/auth/test-login', {
     method: 'POST',
     body: JSON.stringify({ phone: '13800000000', code: '123456' }),
