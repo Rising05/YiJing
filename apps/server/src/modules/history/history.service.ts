@@ -12,7 +12,7 @@ export class HistoryService {
 
   async list(userId: string) {
     const records = await this.prisma.generationRecord.findMany({
-      where: { userId, deletedAt: null },
+      where: this.activeRecordWhere(userId),
       orderBy: { createdAt: 'desc' },
     })
     return records.map((record) => this.toHistoryItem(record))
@@ -44,12 +44,20 @@ export class HistoryService {
 
   private async findOwnedRecord(userId: string, id: string) {
     const record = await this.prisma.generationRecord.findFirst({
-      where: { id, userId, deletedAt: null },
+      where: { id, ...this.activeRecordWhere(userId) },
     })
     if (!record) {
       throw new NotFoundException({ code: 'NOT_FOUND', message: '历史记录不存在' })
     }
     return record
+  }
+
+  private activeRecordWhere(userId: string) {
+    return {
+      userId,
+      deletedAt: null,
+      expiresAt: { gt: new Date() },
+    }
   }
 
   private toHistoryItem(record: GenerationRecord) {

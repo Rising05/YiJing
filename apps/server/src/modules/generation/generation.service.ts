@@ -74,7 +74,14 @@ export class GenerationService {
   }
 
   async regenerate(userId: string, id: string) {
-    const record = await this.prisma.generationRecord.findFirst({ where: { id, userId, deletedAt: null } })
+    const record = await this.prisma.generationRecord.findFirst({
+      where: {
+        id,
+        userId,
+        deletedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+    })
     if (!record) {
       throw new NotFoundException({ code: 'NOT_FOUND', message: '生成记录不存在' })
     }
