@@ -43,13 +43,14 @@ export default function SettingsPage() {
 
   return (
     <PageShell>
+      <div data-testid="settings-page" className="sr-only">设置页面</div>
       <h1 className="text-2xl font-black">我的</h1>
       {error ? <p className="mt-3 text-sm text-coral" data-testid="settings-error">{error}</p> : null}
       <div className="mt-5 grid gap-3">
         <LiquidGlassCard>
           <div className="p-4">
             <p className="text-sm font-bold">账号</p>
-            <p className="mt-1 text-sm text-ink/60">{user ? `${user.nickname} · ${user.phone}` : '未登录'}</p>
+            <p className="mt-1 text-sm text-ink/60" data-testid="settings-account-status">{user ? `${user.nickname} · ${user.phone}` : '未登录'}</p>
             {user?.remainingCredits !== undefined ? (
               <p className="mt-2 text-xs font-semibold text-ink/50">剩余生成次数：{user.remainingCredits}</p>
             ) : null}
@@ -58,6 +59,7 @@ export default function SettingsPage() {
         {confirmAction ? (
           <LiquidGlassCard>
             <div className="p-4">
+              <div data-testid="settings-confirm-panel" data-action={confirmAction} className="sr-only">设置确认操作</div>
               <p className="text-sm font-bold">{confirmAction === 'delete-account' ? '确认删除账号？' : '确认清除缓存？'}</p>
               <p className="mt-2 text-sm leading-6 text-ink/60">
                 {confirmAction === 'delete-account'
@@ -65,10 +67,11 @@ export default function SettingsPage() {
                   : '这会清除本机保存的历史缓存，不会删除后端账号。'}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <GlassButton variant="secondary" onClick={() => setConfirmAction(null)}>取消</GlassButton>
+                <GlassButton variant="secondary" onClick={() => setConfirmAction(null)} data-testid="settings-cancel-confirm">取消</GlassButton>
                 <GlassButton
                   loading={deleting}
                   onClick={() => confirmAction === 'delete-account' ? void handleDeleteAccount() : clearCache()}
+                  data-testid="settings-confirm-action"
                 >
                   确认
                 </GlassButton>
@@ -76,8 +79,8 @@ export default function SettingsPage() {
             </div>
           </LiquidGlassCard>
         ) : null}
-        <GlassButton variant="secondary" onClick={() => setConfirmAction('clear-cache')}>清除缓存</GlassButton>
-        <GlassButton variant="secondary" onClick={() => setConfirmAction('delete-account')}>删除账号与历史数据</GlassButton>
+        <GlassButton variant="secondary" onClick={() => setConfirmAction('clear-cache')} data-testid="settings-clear-cache-button">清除缓存</GlassButton>
+        <GlassButton variant="secondary" onClick={() => setConfirmAction('delete-account')} data-testid="settings-delete-account-button">删除账号与历史数据</GlassButton>
         <div className="grid gap-2">
           <Link className="settings-link" to="/privacy">隐私政策</Link>
           <Link className="settings-link" to="/terms">用户协议</Link>

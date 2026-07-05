@@ -120,6 +120,7 @@ try {
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="result-page"]')) && location.pathname.startsWith('/result/'), 8000)
   await page.waitFor(() => document.body.innerText.includes('单词') && document.body.innerText.includes('导出 PNG'))
   await assertHistoryFlow(page)
+  await assertSettingsFlow(page)
 
   console.log(`ui-smoke: passed against ${baseUrl}`)
 } finally {
@@ -242,6 +243,32 @@ async function assertHistoryFlow(page) {
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="history-confirm-delete-button"]')))
   await page.click('[data-testid="history-confirm-delete-button"]')
   await page.waitFor(() => document.querySelectorAll('[data-testid="history-record"]').length === window.__yijingInitialHistoryCount - 1)
+}
+
+async function assertSettingsFlow(page) {
+  await page.click('[data-testid="tab-settings"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="settings-page"]')))
+  await page.waitFor(() => document.querySelector('[data-testid="settings-account-status"]')?.textContent?.includes('测试用户'))
+
+  await page.click('[data-testid="settings-clear-cache-button"]')
+  await page.waitFor(() => document.querySelector('[data-testid="settings-confirm-panel"]')?.getAttribute('data-action') === 'clear-cache')
+  await page.click('[data-testid="settings-confirm-action"]')
+  await page.waitFor(() => (JSON.parse(localStorage.getItem('memory-palace-history') || '{}')?.state?.records?.length ?? 0) === 0)
+
+  await page.click('[data-testid="tab-history"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="history-page"]')))
+  await page.waitFor(() => document.body.innerText.includes('还没有生成记录。'))
+
+  await page.click('[data-testid="tab-settings"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="settings-page"]')))
+  await page.click('[data-testid="settings-delete-account-button"]')
+  await page.waitFor(() => document.querySelector('[data-testid="settings-confirm-panel"]')?.getAttribute('data-action') === 'delete-account')
+  await page.click('[data-testid="settings-confirm-action"]')
+  await page.waitFor(() => document.querySelector('[data-testid="settings-account-status"]')?.textContent?.includes('未登录'))
+  await page.waitFor(() => {
+    const authState = JSON.parse(localStorage.getItem('memory-palace-auth') || '{}')?.state
+    return authState?.user == null && authState?.token == null
+  })
 }
 
 async function assertHomeCardLayout(page, expectedViewportWidth) {
