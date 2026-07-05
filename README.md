@@ -115,6 +115,7 @@ npm run build:mobile
 - `npm run check:tracking-sdk` 会扫描移动端依赖、lockfile 和原生配置，防止广告、归因、统计追踪、ATT、SKAdNetwork 等无关 SDK 进入 MVP。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
+- `npm run check:release-metadata` 会校验 Capacitor appId/App 名、Android applicationId/namespace/strings、前端版本和 Android `versionName` 是否一致。
 - `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断、库 wrapper 不偏移和无水平溢出已纳入 390px/569px UI smoke。
 - 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
@@ -362,6 +363,7 @@ npm run check:image-prompts
 npm run check:image-storage
 npm run check:production-redaction
 npm run check:permissions
+npm run check:release-metadata
 npm run check:release-env
 npm run check:tracking-sdk
 npm run cleanup:expired-images
@@ -375,7 +377,7 @@ npm run smoke:ui
 
 `npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
@@ -386,6 +388,8 @@ npm run smoke:ui
 `npm run check:production-redaction` 会检查生成记录和 AI 使用日志的生产环境脱敏守卫，防止 `GenerationRecord.promptUsed`、`AiUsageLog.rawPrompt`、`AiUsageLog.rawResponse` 在生产环境直接保存完整 prompt 或模型原始 JSON。
 
 `npm run check:permissions` 会扫描 Capacitor Android manifest 和已生成的 iOS Info.plist，确保 MVP 没有默认申请定位、相机、麦克风、通讯录、日历、短信、通知、跟踪等敏感权限。当前 Android 只允许 `android.permission.INTERNET`。
+
+`npm run check:release-metadata` 会校验当前发布元数据：Capacitor `appId/appName/webDir`、iOS safe area 配置、Android `namespace/applicationId/versionName/versionCode`、Android strings、MainActivity 包名和 manifest launcher 配置。
 
 `npm run check:release-env` 会检查本机原生打包环境，包括 Node/npm、Capacitor 配置、Android 工程、Java、Android SDK、iOS 工程、Xcode 和 CocoaPods。默认只报告阻塞项并返回成功；需要作为发布门禁时可运行 `npm run check:release-env -w apps/mobile -- --strict`。
 

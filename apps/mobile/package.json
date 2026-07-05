@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "check:frontend-secrets": "node scripts/check-frontend-secrets.mjs",
     "check:permissions": "node scripts/check-permissions.mjs",
+    "check:release-metadata": "node scripts/check-release-metadata.mjs",
     "check:release-env": "node scripts/check-release-env.mjs",
     "check:tracking-sdk": "node scripts/check-tracking-sdk.mjs",
     "smoke:ui": "node scripts/smoke-ui.mjs",

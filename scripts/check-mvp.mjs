@@ -18,6 +18,7 @@ const steps = [
   ['check:frontend-secrets', ['run', 'check:frontend-secrets']],
   ['check:permissions', ['run', 'check:permissions']],
   ['check:tracking-sdk', ['run', 'check:tracking-sdk']],
+  ['check:release-metadata', ['run', 'check:release-metadata']],
   ['check:release-env', ['run', 'check:release-env']],
 ]
 
