@@ -103,6 +103,7 @@ npm run build:mobile
 - 文本生成、单词生成、结果页和关于页都会展示 AI 学习辅助免责声明。
 - PNG 导出在浏览器本地合成，不上传服务器。
 - 后端校验错误会映射为稳定业务码，例如 `INPUT_TOO_LONG`、`TOO_MANY_WORDS`、`INVALID_INPUT`。
+- `npm run check:error-codes` 会扫描后端源码中抛出的业务错误码，并确认共享包和前端文案已覆盖。
 - 单词/短语在前端和后端都会 trim 并按大小写不敏感规则去重。
 - 单词记忆卡片支持高级卡片模式：场景记忆图、联想记忆图、简洁信息卡；简洁信息卡会优先使用 `blank_word_card_30` 空白词卡模板。
 - 单词结果会保存 `cardMode`，重新生成时会延续原卡片模式；旧记录缺少该字段时会根据 `blank_word_card_30` 推断为简洁信息卡。
@@ -359,6 +360,7 @@ npm run check:ai-templates
 npm run check:ai-retry
 npm run check:content-safety
 npm run check:config
+npm run check:error-codes
 npm run check:image-prompts
 npm run check:image-storage
 npm run check:production-redaction
@@ -377,11 +379,13 @@ npm run smoke:ui
 
 `npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
 `npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。
+
+`npm run check:error-codes` 会扫描 `apps/server/src` 中显式返回或抛出的业务错误码，并确认每个码都在 `packages/shared` 的 `ErrorCode` 和 `ErrorLabels` 中覆盖，防止真实 LLM/生图错误变成前端未知私有码。
 
 `npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存/删除闭环，以及 `STORAGE_PROVIDER=oss`、`STORAGE_PROVIDER=s3-compatible` 的签名上传/删除请求生成。
 

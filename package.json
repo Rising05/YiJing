@@ -17,6 +17,7 @@
     "check:mvp": "node scripts/check-mvp.mjs",
     "check:content-safety": "npm run check:content-safety -w apps/server",
     "check:config": "npm run check:config -w apps/server",
+    "check:error-codes": "npm run check:error-codes -w apps/server",
     "check:ai-retry": "npm run check:ai-retry -w apps/server",
     "check:frontend-secrets": "npm run check:frontend-secrets -w apps/mobile",
     "check:image-prompts": "npm run check:image-prompts -w apps/server",

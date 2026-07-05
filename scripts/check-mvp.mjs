@@ -8,6 +8,7 @@ const steps = [
   ['build:server', ['run', 'build:server']],
   ['prisma:validate', ['run', 'prisma:validate']],
   ['check:config', ['run', 'check:config']],
+  ['check:error-codes', ['run', 'check:error-codes']],
   ['check:content-safety', ['run', 'check:content-safety']],
   ['check:ai-templates', ['run', 'check:ai-templates']],
   ['check:ai-retry', ['run', 'check:ai-retry']],

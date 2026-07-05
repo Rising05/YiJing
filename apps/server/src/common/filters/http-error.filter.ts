@@ -28,8 +28,8 @@ export class HttpErrorFilter implements ExceptionFilter {
 
   private statusCodeToCode(status: number) {
     if (status === HttpStatus.UNAUTHORIZED) return 'UNAUTHORIZED'
-    if (status === HttpStatus.BAD_REQUEST) return 'BAD_REQUEST'
+    if (status === HttpStatus.BAD_REQUEST) return 'INVALID_INPUT'
     if (status === HttpStatus.NOT_FOUND) return 'NOT_FOUND'
-    return 'INTERNAL_SERVER_ERROR'
+    return 'INTERNAL_ERROR'
   }
 }
