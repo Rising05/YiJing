@@ -11,6 +11,7 @@ const steps = [
   ['check:content-safety', ['run', 'check:content-safety']],
   ['check:ai-templates', ['run', 'check:ai-templates']],
   ['check:image-storage', ['run', 'check:image-storage']],
+  ['check:production-redaction', ['run', 'check:production-redaction']],
   ['build:mobile', ['run', 'build:mobile']],
   ['check:frontend-secrets', ['run', 'check:frontend-secrets']],
   ['check:permissions', ['run', 'check:permissions']],

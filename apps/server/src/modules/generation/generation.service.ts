@@ -182,7 +182,7 @@ export class GenerationService {
           backgroundImageUrl: input.backgroundImageUrl,
           resultJson: input.result as Prisma.InputJsonValue,
           imagePrompt: input.imagePrompt,
-          promptUsed: input.promptUsed,
+          promptUsed: this.persistedPrompt(input.promptUsed),
           expiresAt,
         },
       })
@@ -194,8 +194,8 @@ export class GenerationService {
           model: input.aiModel,
           status: 'success',
           imageCount: 0,
-          rawPrompt: process.env.NODE_ENV === 'production' ? null : input.promptUsed,
-          rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.rawResponse ?? Prisma.JsonNull,
+          rawPrompt: this.rawPromptForLog(input.promptUsed),
+          rawResponse: this.rawJsonForLog(input.rawResponse),
         },
       })
       await tx.aiUsageLog.create({
@@ -206,8 +206,8 @@ export class GenerationService {
           model: input.imageModel,
           status: 'success',
           imageCount: input.imageProvider === 'mock' ? 0 : 1,
-          rawPrompt: process.env.NODE_ENV === 'production' ? null : input.imagePrompt,
-          rawResponse: process.env.NODE_ENV === 'production' ? Prisma.JsonNull : input.imageRawResponse ?? Prisma.JsonNull,
+          rawPrompt: this.rawPromptForLog(input.imagePrompt),
+          rawResponse: this.rawJsonForLog(input.imageRawResponse),
         },
       })
       const quota = await tx.userQuota.findUniqueOrThrow({ where: { userId } })
@@ -223,5 +223,31 @@ export class GenerationService {
         used: quota.usedCredits,
       },
     }
+  }
+
+  private persistedPrompt(prompt: string) {
+    if (!this.isProduction) return prompt
+    return `[redacted:${this.shortHash(prompt)}]`
+  }
+
+  private rawPromptForLog(prompt: string) {
+    return this.isProduction ? null : prompt
+  }
+
+  private rawJsonForLog(value: Prisma.InputJsonValue | null) {
+    return this.isProduction ? Prisma.JsonNull : value ?? Prisma.JsonNull
+  }
+
+  private shortHash(value: string) {
+    let hash = 0
+    for (let index = 0; index < value.length; index += 1) {
+      hash = Math.imul(31, hash) + value.charCodeAt(index)
+      hash |= 0
+    }
+    return Math.abs(hash).toString(36)
+  }
+
+  private get isProduction() {
+    return process.env.NODE_ENV === 'production'
   }
 }

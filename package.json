@@ -19,6 +19,7 @@
     "check:config": "npm run check:config -w apps/server",
     "check:frontend-secrets": "npm run check:frontend-secrets -w apps/mobile",
     "check:image-storage": "npm run check:image-storage -w apps/server",
+    "check:production-redaction": "npm run check:production-redaction -w apps/server",
     "check:permissions": "npm run check:permissions -w apps/mobile",
     "check:release-env": "npm run check:release-env -w apps/mobile",
     "check:tracking-sdk": "npm run check:tracking-sdk -w apps/mobile",

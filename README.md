@@ -353,6 +353,7 @@ npm run check:ai-templates
 npm run check:content-safety
 npm run check:config
 npm run check:image-storage
+npm run check:production-redaction
 npm run check:permissions
 npm run check:release-env
 npm run check:tracking-sdk
@@ -363,13 +364,15 @@ npm run smoke:ui
 
 `npm run check:ai-templates` 需要先执行 `npm run build:server`，用于验证后端 AI prompt/校验层使用的是 `packages/shared` 中的 10 个 canonical templates，避免真实 LLM 模式下模板数量和 SPEC 分叉。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/图片存储检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
 `npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。
 
 `npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存/删除闭环，以及 `STORAGE_PROVIDER=oss`、`STORAGE_PROVIDER=s3-compatible` 的签名上传/删除请求生成。
+
+`npm run check:production-redaction` 会检查生成记录和 AI 使用日志的生产环境脱敏守卫，防止 `GenerationRecord.promptUsed`、`AiUsageLog.rawPrompt`、`AiUsageLog.rawResponse` 在生产环境直接保存完整 prompt 或模型原始 JSON。
 
 `npm run check:permissions` 会扫描 Capacitor Android manifest 和已生成的 iOS Info.plist，确保 MVP 没有默认申请定位、相机、麦克风、通讯录、日历、短信、通知、跟踪等敏感权限。当前 Android 只允许 `android.permission.INTERNET`。
 
