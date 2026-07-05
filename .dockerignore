@@ -1,0 +1,14 @@
+node_modules
+.npm-cache
+.git
+.DS_Store
+*.log
+*.tsbuildinfo
+apps/mobile/dist
+apps/mobile/android
+apps/mobile/ios
+apps/server/dist
+apps/server/uploads
+apps/server/.env
+apps/server/.env.production
+logo.png

@@ -18,6 +18,7 @@
     "check:content-safety": "npm run check:content-safety -w apps/server",
     "check:config": "npm run check:config -w apps/server",
     "check:cors-config": "npm run check:cors-config -w apps/server",
+    "check:deploy-config": "node scripts/check-deploy-config.mjs",
     "check:error-codes": "npm run check:error-codes -w apps/server",
     "check:ai-retry": "npm run check:ai-retry -w apps/server",
     "check:frontend-secrets": "npm run check:frontend-secrets -w apps/mobile",

@@ -158,6 +158,17 @@ curl -s http://localhost:3000/api/health
 npm run build:server
 ```
 
+生产 Docker 部署骨架：
+
+```bash
+cp apps/server/.env.production.example apps/server/.env.production
+npm run check:deploy-config
+docker compose -f docker-compose.prod.example.yml build server
+docker compose -f docker-compose.prod.example.yml up -d
+```
+
+`docker-compose.prod.example.yml` 提供 MySQL 8.4、后端容器、启动前 `prisma migrate deploy`、本地图片持久化卷和健康检查。真实发布时仍需把 `apps/server/.env.production` 中的域名、CORS、JWT、LLM、通义万相和对象存储配置替换为正式值，并在云服务器前配置 HTTPS 反向代理或负载均衡。
+
 校验 Prisma schema：
 
 ```bash
@@ -372,6 +383,7 @@ npm run check:ai-retry
 npm run check:content-safety
 npm run check:config
 npm run check:cors-config
+npm run check:deploy-config
 npm run check:error-codes
 npm run check:image-prompts
 npm run check:image-storage
@@ -398,13 +410,15 @@ npm run smoke:ui
 
 `npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏检查、mobile build、前端密钥/移动端布局/移动端运行配置/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、mobile build、前端密钥/移动端布局/移动端运行配置/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
 `npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。生产部署前使用 `ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production`，会额外禁止 mock、占位密钥、缺失 CORS 白名单和 localhost 图片公开地址。
 
 `npm run check:cors-config` 需要先执行 `npm run build:server`，用于验证后端 CORS 行为：开发环境未配置 `ALLOWED_ORIGINS` 时允许本地调试，生产环境必须配置明确来源列表并拒绝 `*` 通配符。
+
+`npm run check:deploy-config` 会检查服务端 Dockerfile、`.dockerignore`、生产 compose 示例、容器内 `prisma migrate deploy`、非 root 运行、健康检查和服务端 `start` 入口，防止生产部署骨架退化。
 
 `npm run check:production-config` 会用临时 env 自测生产配置规则：一份安全生产配置必须通过，一份 mock/占位/localhost 配置必须失败。这个检查不需要真实 API Key，也不会连接外部服务。
 
@@ -433,6 +447,7 @@ npm run smoke:ui
 - 配置真实 LLM API Key 后验证真实 JSON 生成。
 - 配置通义万相 API Key 后验证真实生图。
 - 配置真实 OSS 或 S3-compatible 对象存储账号后验证上传、公开 URL 访问和删除闭环。
+- 确认正式云厂商、公网域名、HTTPS 证书和反向代理配置。
 - 安装完整 Xcode + CocoaPods 后生成 iOS 工程。
 - Android AAB/APK 打包。
 - 正式登录：手机号短信 + 微信移动 App 登录。

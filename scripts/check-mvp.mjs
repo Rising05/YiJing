@@ -17,6 +17,7 @@ const steps = [
   ['check:image-storage', ['run', 'check:image-storage']],
   ['check:production-config', ['run', 'check:production-config']],
   ['check:production-redaction', ['run', 'check:production-redaction']],
+  ['check:deploy-config', ['run', 'check:deploy-config']],
   ['build:mobile', ['run', 'build:mobile']],
   ['check:frontend-secrets', ['run', 'check:frontend-secrets']],
   ['check:mobile-layout', ['run', 'check:mobile-layout']],

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js",
+    "start": "node dist/apps/server/src/main.js",
     "check:ai-templates": "node scripts/check-ai-templates.mjs",
     "check:content-safety": "node scripts/check-content-safety.mjs",
     "check:config": "node scripts/check-runtime-config.mjs",
@@ -33,11 +33,11 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "reflect-metadata": "^0.2.2",
+    "prisma": "^6.11.1",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@types/node": "^24.0.10",
-    "prisma": "^6.11.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.5.4"
   }
