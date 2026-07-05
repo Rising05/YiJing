@@ -95,11 +95,11 @@
 | --- | --- | --- | --- | --- |
 | SPEC 文档 | Done | Agent-Product | 2026-07-03 | 需求访谈结论已整理 |
 | Phase 1 前端 Mock 闭环 | Ready for QA | Agent-Frontend | 2026-07-03 | `npm install --cache .npm-cache`、`npm run build`、`npm run dev`、`curl -I http://localhost:5173/` 均通过 |
-| Phase 2 后端 Mock + MySQL | Ready for QA | Agent-Backend | 2026-07-04 | MySQL migrate 完成，全部 10 项 smoke test 通过（health/login/text-memory/word-card/regenerate/history/detail/favorite/delete history/delete account）
+| Phase 2 后端 Mock + MySQL | Ready for QA | Agent-Backend/QA | 2026-07-05 | MySQL migrate 完成，全部 16 项 smoke test 通过（health/unauthorized/login/input validation/content safety/text-memory/word-card/regenerate/history/detail/favorite/delete history/delete account/deleted token rejection） |
 | Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-03 | OpenAI-compatible LLM client、prompt 包、JSON 重试解析、schema/anchor 校验已实现；真实调用待 API Key 验证 |
 | Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI/Backend | 2026-07-05 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象、本地持久化 provider、阿里云 OSS 和 S3-compatible 签名上传/删除接口已实现；真实万相和真实对象存储调用待 API Key/账号验证 |
 | Phase 5 iOS 打包 | In Progress | Agent-Release | 2026-07-03 | Capacitor iOS 依赖、脚本、配置和占位图标/启动页已完成；`cap add ios` 因 CocoaPods/完整 Xcode 缺失阻塞 |
-| QA 回归验收 | Done | Agent-QA | 2026-07-04 | 静态检查通过；后端 smoke 10/10 通过；前端 Chrome headless UI smoke 通过 |
+| QA 回归验收 | Done | Agent-QA | 2026-07-05 | 静态检查通过；后端 API smoke 16 项通过；前端 Chrome headless UI smoke 通过 |
 
 状态枚举：`Not Started`、`In Progress`、`Blocked`、`Ready for QA`、`Done`。
 
@@ -117,6 +117,7 @@
 | README 使用文档 | Agent-Product | Done | 新增项目介绍、技术栈、本地运行、mock 模式、LLM/万相接入、iOS/Android 打包和大陆发布注意事项 | `README.md`, `SPEC.md` | 人工检查；`npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 历史与账号 API 联调适配 | Agent-Frontend | Done | 历史列表、历史详情、删除历史和删除账号优先请求后端 API，后端不可用时回退本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `apps/mobile/src/pages/DetailPage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 后端 API Smoke Test | Agent-QA | Done | 新增后端主流程 smoke 脚本，覆盖健康检查、测试登录、文本生成、单词生成、历史、收藏、删除历史和删除账号 | `apps/server/scripts/smoke-api.mjs`, `package.json`, `apps/server/package.json`, `README.md`, `SPEC.md` | `node --check apps/server/scripts/smoke-api.mjs`; `npm run build:server`; `npm run prisma:validate` | 2026-07-04 |
+| 后端 API 负向错误码 Smoke | Agent-Backend/QA | Done | 后端 API smoke 新增 SPEC §15 负向路径覆盖：未登录生成必须返回 `UNAUTHORIZED`，文本超过 500 字返回 `INPUT_TOO_LONG`，单词超过 30 个返回 `TOO_MANY_WORDS`，内容安全拦截返回 `CONTENT_BLOCKED`；当前 smoke 共 16 项运行通过 | `apps/server/scripts/smoke-api.mjs`, `README.md`, `SPEC.md` | `node --check apps/server/scripts/smoke-api.mjs`; `npm run build:server`; `npm run prisma:validate`; `npm run smoke:api` | 2026-07-05 |
 | Android Capacitor 工程准备 | Agent-Release | Done | 加入 `@capacitor/android`、Android 同步脚本并生成 `apps/mobile/android` 工程；AAB/APK 构建待 Android Studio/JDK 环境 | `apps/mobile/android/**`, `apps/mobile/package.json`, `apps/mobile/ANDROID_SETUP.md`, `.gitignore`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run cap:add:android -w apps/mobile` | 2026-07-04 |
 | 生成次数/额度扣减 | Agent-Backend/Frontend | Done | 后端测试登录自动创建/补齐 20 次额度；生成记录保存事务内扣减 1 次并返回剩余额度；前端首页/我的展示剩余次数，本地 mock 路径同步扣减，业务错误不再被 mock 回退绕过 | `apps/server/src/modules/auth/auth.service.ts`, `apps/server/src/modules/generation/generation.service.ts`, `apps/mobile/src/stores/authStore.ts`, `apps/mobile/src/pages/TextMemoryPage.tsx`, `apps/mobile/src/pages/WordCardPage.tsx`, `apps/mobile/src/pages/HomePage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `apps/mobile/src/types/index.ts`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-04 |
 | 结果页重新生成联调 | Agent-Frontend/QA | Done | 前端结果页接入后端 `POST /generation/:id/regenerate`，成功后写入当前结果和历史；后端不可用时用当前结果本地 mock 再生成；smoke test 覆盖重新生成和额度返回 | `apps/mobile/src/services/api.ts`, `apps/mobile/src/pages/GenerateResultPage.tsx`, `apps/server/scripts/smoke-api.mjs`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate`; `node --check apps/server/scripts/smoke-api.mjs` | 2026-07-04 |

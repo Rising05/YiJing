@@ -44,6 +44,16 @@ async function main() {
   const health = await request('/health')
   console.log('health:', health.ok ? 'ok' : 'failed')
 
+  await expectRequestFailure('/generation/text-memory', {
+    method: 'POST',
+    body: JSON.stringify({
+      inputText: '未登录时不能生成',
+      contentType: 'modern_text',
+      scenePreference: 'auto',
+    }),
+  }, 'UNAUTHORIZED')
+  console.log('unauthorized generation rejected: ok')
+
   const login = await request('/auth/test-login', {
     method: 'POST',
     body: JSON.stringify({ phone: '13800000000', code: '123456' }),
@@ -51,6 +61,39 @@ async function main() {
   const token = login.token
   if (!token) throw new Error('login did not return token')
   console.log('login: ok')
+
+  await expectRequestFailure('/generation/text-memory', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      inputText: '春'.repeat(501),
+      contentType: 'modern_text',
+      scenePreference: 'auto',
+    }),
+  }, 'INPUT_TOO_LONG')
+  console.log('text length validation: ok')
+
+  await expectRequestFailure('/generation/word-card', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      words: Array.from({ length: 31 }, (_, index) => `word-${index + 1}`),
+      theme: 'auto',
+      cardMode: 'scene',
+    }),
+  }, 'TOO_MANY_WORDS')
+  console.log('word count validation: ok')
+
+  await expectRequestFailure('/generation/text-memory', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      inputText: '请生成带有宗教符号和政治符号的背诵图。',
+      contentType: 'modern_text',
+      scenePreference: 'auto',
+    }),
+  }, 'CONTENT_BLOCKED')
+  console.log('content safety rejection: ok')
 
   const textResult = await request('/generation/text-memory', {
     method: 'POST',
