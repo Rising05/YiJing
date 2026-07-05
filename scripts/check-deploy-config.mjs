@@ -9,12 +9,14 @@ const files = {
   dockerignore: read('.dockerignore'),
   dockerfile: read('apps/server/Dockerfile'),
   compose: read('docker-compose.prod.example.yml'),
+  nginx: read('deploy/nginx/yijing.conf.example'),
   serverPackage: JSON.parse(read('apps/server/package.json')),
 }
 
 checkServerStart()
 checkDockerfile()
 checkCompose()
+checkNginx()
 checkDockerignore()
 
 if (errors.length) {
@@ -22,7 +24,7 @@ if (errors.length) {
   process.exit(1)
 }
 
-console.log('deploy-config: server Dockerfile and production compose example checks passed')
+console.log('deploy-config: server Dockerfile, production compose, and Nginx example checks passed')
 
 function read(relativePath) {
   const filePath = resolve(repoRoot, relativePath)
@@ -63,6 +65,18 @@ function checkCompose() {
   assertIncludes(files.compose, 'yijing_uploads:', 'production compose example must persist local generated images')
   assertIncludes(files.compose, '${MYSQL_PASSWORD:?set MYSQL_PASSWORD}', 'production compose example must require a real MySQL password')
   assertIncludes(files.compose, '${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}', 'production compose example must require a real MySQL root password')
+}
+
+function checkNginx() {
+  assertIncludes(files.nginx, 'server_name yijing.example.com', 'Nginx example must keep an obvious placeholder domain')
+  assertIncludes(files.nginx, 'return 301 https://$host$request_uri', 'Nginx example must redirect HTTP to HTTPS')
+  assertIncludes(files.nginx, 'ssl_certificate /etc/letsencrypt/live/yijing.example.com/fullchain.pem', 'Nginx example must show TLS certificate path')
+  assertIncludes(files.nginx, 'Strict-Transport-Security', 'Nginx example must include HSTS header')
+  assertIncludes(files.nginx, 'location = /healthz', 'Nginx example must expose a reverse-proxied health check')
+  assertIncludes(files.nginx, 'proxy_pass http://yijing_server/api/health', 'Nginx health check must proxy to backend /api/health')
+  assertIncludes(files.nginx, 'location /api/', 'Nginx example must proxy backend API routes')
+  assertIncludes(files.nginx, 'proxy_set_header X-Forwarded-Proto https', 'Nginx example must forward HTTPS scheme to the backend')
+  assertIncludes(files.nginx, 'client_max_body_size 2m', 'Nginx example must cap request body size for this API')
 }
 
 function checkDockerignore() {

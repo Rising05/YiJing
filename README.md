@@ -169,7 +169,7 @@ docker compose -f docker-compose.prod.example.yml build server
 docker compose -f docker-compose.prod.example.yml up -d
 ```
 
-`docker-compose.prod.example.yml` 提供 MySQL 8.4、后端容器、启动前 `prisma migrate deploy`、本地图片持久化卷和健康检查。真实发布时仍需把 `apps/server/.env.production` 中的域名、CORS、JWT、LLM、通义万相和对象存储配置替换为正式值，并在云服务器前配置 HTTPS 反向代理或负载均衡。
+`docker-compose.prod.example.yml` 提供 MySQL 8.4、后端容器、启动前 `prisma migrate deploy`、本地图片持久化卷和健康检查。`deploy/nginx/yijing.conf.example` 提供云服务器前置 Nginx HTTPS 反向代理模板，包含 HTTP 到 HTTPS 跳转、`/api/` 转发、`/healthz` 健康检查、HSTS 和 forwarded headers。真实发布时仍需把 `apps/server/.env.production` 中的域名、CORS、JWT、LLM、通义万相和对象存储配置替换为正式值，并把 Nginx 模板中的 `yijing.example.com`、证书路径和服务器端口替换为正式配置。
 
 校验 Prisma schema：
 
@@ -423,7 +423,7 @@ npm run smoke:ui
 
 `npm run check:auth-providers` 会检查后端 MVP 测试登录和正式登录预留接口：测试登录仍保留，短信验证码、短信登录和微信登录端点存在，但在未接入服务商前必须统一返回 `FEATURE_NOT_CONFIGURED`，避免客户端误认为正式登录已可用。
 
-`npm run check:deploy-config` 会检查服务端 Dockerfile、`.dockerignore`、生产 compose 示例、容器内 `prisma migrate deploy`、非 root 运行、健康检查和服务端 `start` 入口，防止生产部署骨架退化。
+`npm run check:deploy-config` 会检查服务端 Dockerfile、`.dockerignore`、生产 compose 示例、Nginx HTTPS 反向代理模板、容器内 `prisma migrate deploy`、非 root 运行、健康检查和服务端 `start` 入口，防止生产部署骨架退化。
 
 `npm run check:production-config` 会用临时 env 自测生产配置规则：一份安全生产配置必须通过，一份 mock/占位/localhost 配置必须失败。这个检查不需要真实 API Key，也不会连接外部服务。
 
@@ -452,7 +452,7 @@ npm run smoke:ui
 - 配置真实 LLM API Key 后验证真实 JSON 生成。
 - 配置通义万相 API Key 后验证真实生图。
 - 配置真实 OSS 或 S3-compatible 对象存储账号后验证上传、公开 URL 访问和删除闭环。
-- 确认正式云厂商、公网域名、HTTPS 证书和反向代理配置。
+- 确认正式云厂商、公网域名、HTTPS 证书，并将 `deploy/nginx/yijing.conf.example` 替换为线上 Nginx 或负载均衡配置。
 - 安装完整 Xcode + CocoaPods 后生成 iOS 工程。
 - Android AAB/APK 打包。
 - 正式登录：手机号短信 + 微信移动 App 登录。
