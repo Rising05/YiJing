@@ -16,12 +16,14 @@ if (explicitEnvFile && !existsSync(envPath)) {
 
 const activeEnvPath = existsSync(envPath) ? envPath : fallbackEnvPath
 const env = parseEnvFile(activeEnvPath)
+const productionMode = process.argv.includes('--production') || env.NODE_ENV === 'production'
 const findings = []
 
 checkCore()
 checkLlm()
 checkImage()
 checkStorage()
+checkProduction()
 
 const errors = findings.filter((item) => item.level === 'error')
 const warnings = findings.filter((item) => item.level === 'warn')
@@ -39,8 +41,12 @@ if (errors.length) process.exit(1)
 function checkCore() {
   requireValue('DATABASE_URL', 'MySQL connection string is required for server runtime')
   requireValue('JWT_SECRET', 'JWT_SECRET is required for login tokens')
-  if ((env.JWT_SECRET ?? '').includes('replace-with')) {
-    warn('JWT_SECRET still uses the example placeholder; replace it before any shared or production deployment')
+  if (isPlaceholder(env.JWT_SECRET)) {
+    if (productionMode) {
+      error('NODE_ENV=production requires JWT_SECRET to be replaced with a real high-entropy secret')
+    } else {
+      warn('JWT_SECRET still uses the example placeholder; replace it before any shared or production deployment')
+    }
   }
   const port = Number(env.PORT ?? 3000)
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
@@ -51,11 +57,18 @@ function checkCore() {
 function checkLlm() {
   const mock = flag('AI_MOCK_MODE', true)
   if (mock) {
-    info('AI_MOCK_MODE is enabled; LLM_API_KEY is not required for local mock generation')
-    return
+    if (productionMode) {
+      error('NODE_ENV=production requires AI_MOCK_MODE=false')
+    } else {
+      info('AI_MOCK_MODE is enabled; LLM_API_KEY is not required for local mock generation')
+      return
+    }
   }
 
   requireValue('LLM_API_KEY', 'AI_MOCK_MODE=false requires LLM_API_KEY')
+  if (isPlaceholder(env.LLM_API_KEY)) {
+    error('AI_MOCK_MODE=false requires LLM_API_KEY to be a real backend-only secret, not an example placeholder')
+  }
   requireUrl('LLM_BASE_URL', 'AI_MOCK_MODE=false requires a valid LLM_BASE_URL')
   requireValue('LLM_MODEL', 'AI_MOCK_MODE=false requires LLM_MODEL')
 
@@ -68,11 +81,18 @@ function checkLlm() {
 function checkImage() {
   const mock = flag('IMAGE_MOCK_MODE', true)
   if (mock) {
-    info('IMAGE_MOCK_MODE is enabled; WANX_API_KEY is not required for local mock generation')
-    return
+    if (productionMode) {
+      error('NODE_ENV=production requires IMAGE_MOCK_MODE=false')
+    } else {
+      info('IMAGE_MOCK_MODE is enabled; WANX_API_KEY is not required for local mock generation')
+      return
+    }
   }
 
   requireValue('WANX_API_KEY', 'IMAGE_MOCK_MODE=false requires WANX_API_KEY')
+  if (isPlaceholder(env.WANX_API_KEY)) {
+    error('IMAGE_MOCK_MODE=false requires WANX_API_KEY to be a real backend-only secret, not an example placeholder')
+  }
   requireUrl('WANX_BASE_URL', 'IMAGE_MOCK_MODE=false requires a valid WANX_BASE_URL')
   requireValue('WANX_MODEL', 'IMAGE_MOCK_MODE=false requires WANX_MODEL')
 
@@ -83,7 +103,11 @@ function checkImage() {
 
   const provider = normalizeProvider()
   if (provider === 'none' || provider === 'mock') {
-    warn('IMAGE_MOCK_MODE=false with STORAGE_PROVIDER=none/mock will keep provider URLs instead of persisting images for 30 days')
+    if (productionMode) {
+      error('NODE_ENV=production requires STORAGE_PROVIDER to persist generated images for the 30-day retention window')
+    } else {
+      warn('IMAGE_MOCK_MODE=false with STORAGE_PROVIDER=none/mock will keep provider URLs instead of persisting images for 30 days')
+    }
   }
   if (provider === 'local' && !env.PUBLIC_BASE_URL) {
     warn('STORAGE_PROVIDER=local without PUBLIC_BASE_URL will return http://localhost:${PORT}/api/images URLs')
@@ -122,6 +146,30 @@ function checkStorage() {
     optionalUrl('S3_PUBLIC_BASE_URL', 'S3_PUBLIC_BASE_URL must be a valid URL when provided')
     if (env.S3_OBJECT_PREFIX && env.S3_OBJECT_PREFIX.includes('..')) {
       error('S3_OBJECT_PREFIX must not contain path traversal segments')
+    }
+  }
+}
+
+function checkProduction() {
+  if (!productionMode) return
+
+  if (env.NODE_ENV !== 'production') {
+    error('Production config check requires NODE_ENV=production in the checked env file')
+  }
+  if ((env.JWT_SECRET ?? '').length < 32) {
+    error('NODE_ENV=production requires JWT_SECRET to be at least 32 characters')
+  }
+
+  warnIfLocalhost('DATABASE_URL', 'Production DATABASE_URL points at localhost; use this only for a single-server deployment')
+
+  const provider = normalizeProvider()
+  if (provider === 'local') {
+    requireUrl('PUBLIC_BASE_URL', 'STORAGE_PROVIDER=local in production requires a public https PUBLIC_BASE_URL')
+    if ((env.PUBLIC_BASE_URL ?? '').startsWith('http://')) {
+      error('STORAGE_PROVIDER=local in production requires PUBLIC_BASE_URL to use https')
+    }
+    if (isLocalhostUrl(env.PUBLIC_BASE_URL)) {
+      error('STORAGE_PROVIDER=local in production must not use localhost PUBLIC_BASE_URL')
     }
   }
 }
@@ -187,6 +235,26 @@ function requireUrl(name, message) {
 function optionalUrl(name, message) {
   if (!env[name]) return
   requireUrl(name, message)
+}
+
+function isPlaceholder(value) {
+  if (!value) return false
+  return /replace-with|your-|example|placeholder/i.test(value)
+}
+
+function isLocalhostUrl(value) {
+  if (!value) return false
+  try {
+    const url = new URL(value)
+    return ['localhost', '127.0.0.1', '0.0.0.0'].includes(url.hostname)
+  } catch {
+    return /localhost|127\.0\.0\.1|0\.0\.0\.0/i.test(value)
+  }
+}
+
+function warnIfLocalhost(name, message) {
+  const value = env[name]
+  if (value && /localhost|127\.0\.0\.1|0\.0\.0\.0/i.test(value)) warn(message)
 }
 
 function info(message) {

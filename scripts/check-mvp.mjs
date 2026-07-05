@@ -14,6 +14,7 @@ const steps = [
   ['check:ai-retry', ['run', 'check:ai-retry']],
   ['check:image-prompts', ['run', 'check:image-prompts']],
   ['check:image-storage', ['run', 'check:image-storage']],
+  ['check:production-config', ['run', 'check:production-config']],
   ['check:production-redaction', ['run', 'check:production-redaction']],
   ['build:mobile', ['run', 'build:mobile']],
   ['check:frontend-secrets', ['run', 'check:frontend-secrets']],
