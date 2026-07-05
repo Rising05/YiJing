@@ -113,6 +113,17 @@ function checkStorage() {
       error('OSS_OBJECT_PREFIX must not contain path traversal segments')
     }
   }
+
+  if (provider === 's3' || provider === 's3-compatible') {
+    requireValue('S3_BUCKET', `STORAGE_PROVIDER=${provider} requires S3_BUCKET`)
+    requireUrl('S3_ENDPOINT', `STORAGE_PROVIDER=${provider} requires a valid S3_ENDPOINT`)
+    requireValue('S3_ACCESS_KEY_ID', `STORAGE_PROVIDER=${provider} requires S3_ACCESS_KEY_ID`)
+    requireValue('S3_SECRET_ACCESS_KEY', `STORAGE_PROVIDER=${provider} requires S3_SECRET_ACCESS_KEY`)
+    optionalUrl('S3_PUBLIC_BASE_URL', 'S3_PUBLIC_BASE_URL must be a valid URL when provided')
+    if (env.S3_OBJECT_PREFIX && env.S3_OBJECT_PREFIX.includes('..')) {
+      error('S3_OBJECT_PREFIX must not contain path traversal segments')
+    }
+  }
 }
 
 function parseEnvFile(filePath) {
