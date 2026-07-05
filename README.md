@@ -225,6 +225,7 @@ WANX_SIZE="960*1696"
 - 默认模型 `wan2.6-t2i`。
 - 强制 `watermark:false`。
 - negative prompt 禁止文字、数字、标签、水印、UI、宗教符号、政治符号。
+- 真实生图 prompt 和后端 mock 保存的 `imagePrompt` 共用同一套中英文硬性禁令，可用 `npm run check:image-prompts` 验证。
 
 ## 图片存储
 
@@ -357,6 +358,7 @@ npm run check:ai-templates
 npm run check:ai-retry
 npm run check:content-safety
 npm run check:config
+npm run check:image-prompts
 npm run check:image-storage
 npm run check:production-redaction
 npm run check:permissions
@@ -371,7 +373,9 @@ npm run smoke:ui
 
 `npm run check:ai-retry` 需要先执行 `npm run build:server`，用于模拟真实 LLM 模式下第一次返回合法 JSON 但非法 `anchorKey`、第二次返回有效结构，确保解析和 schema/anchor 校验处于同一个重试闭环。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/AI 重试/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
+
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 

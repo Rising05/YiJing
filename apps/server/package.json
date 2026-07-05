@@ -11,6 +11,7 @@
     "check:content-safety": "node scripts/check-content-safety.mjs",
     "check:config": "node scripts/check-runtime-config.mjs",
     "check:image-storage": "node scripts/check-image-storage.mjs",
+    "check:image-prompts": "node scripts/check-image-prompts.mjs",
     "check:ai-retry": "node scripts/check-ai-retry.mjs",
     "check:production-redaction": "node scripts/check-production-redaction.mjs",
     "cleanup:expired-images": "node scripts/cleanup-expired-images.mjs",

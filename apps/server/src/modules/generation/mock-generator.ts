@@ -1,3 +1,5 @@
+import { appendImagePromptRequirements } from '../../../../../packages/prompts/src/imagePrompt'
+
 const waterMarkText = '忆境 MemoryPalace'
 
 const anchors = [
@@ -52,7 +54,7 @@ export function createTextMemoryMock(inputText: string, contentType: string, sce
     points,
     explanation: '后端 Mock 阶段生成结构化记忆点，后续由 LLM 和通义万相替换。',
     recitationHint: points.map((point) => point.label).join(' → '),
-    imagePrompt: 'clean learning memory palace, no text, no numbers, no labels, no watermark, no UI elements',
+    imagePrompt: appendImagePromptRequirements('clean learning memory palace background'),
     watermarkText: waterMarkText,
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
@@ -87,10 +89,11 @@ export function createWordCardMock(words: string[], cardMode: 'scene' | 'associa
         position: { x: anchor.x, y: anchor.y },
       }
     }),
-    imagePrompt:
+    imagePrompt: appendImagePromptRequirements(
       cardMode === 'simple'
-        ? 'clean blank vocabulary information card background, soft grid layout, generous whitespace, no text, no numbers, no labels, no watermark, no UI elements'
-        : 'clean vocabulary memory card background, no text, no numbers, no labels, no watermark, no UI elements',
+        ? 'clean blank vocabulary information card background, soft grid layout, generous whitespace'
+        : 'clean vocabulary memory card background',
+    ),
     watermarkText: waterMarkText,
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
