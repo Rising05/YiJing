@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "check:frontend-secrets": "node scripts/check-frontend-secrets.mjs",
     "check:permissions": "node scripts/check-permissions.mjs",
+    "check:release-env": "node scripts/check-release-env.mjs",
     "smoke:ui": "node scripts/smoke-ui.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "cap:init": "cap init",

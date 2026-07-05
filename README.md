@@ -325,6 +325,7 @@ npm run check:content-safety
 npm run check:config
 npm run check:image-storage
 npm run check:permissions
+npm run check:release-env
 npm run cleanup:expired-images
 npm run smoke:api
 npm run smoke:ui
@@ -339,6 +340,8 @@ npm run smoke:ui
 `npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存和删除闭环。
 
 `npm run check:permissions` 会扫描 Capacitor Android manifest 和已生成的 iOS Info.plist，确保 MVP 没有默认申请定位、相机、麦克风、通讯录、日历、短信、通知、跟踪等敏感权限。当前 Android 只允许 `android.permission.INTERNET`。
+
+`npm run check:release-env` 会检查本机原生打包环境，包括 Node/npm、Capacitor 配置、Android 工程、Java、Android SDK、iOS 工程、Xcode 和 CocoaPods。默认只报告阻塞项并返回成功；需要作为发布门禁时可运行 `npm run check:release-env -w apps/mobile -- --strict`。
 
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 
