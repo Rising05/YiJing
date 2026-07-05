@@ -104,6 +104,7 @@ export interface WordCardResult {
   id: string
   title: string
   type: 'word-card'
+  cardMode: WordCardRequest['cardMode']
   templateId: string
   backgroundImageUrl: string
   words: WordPoint[]

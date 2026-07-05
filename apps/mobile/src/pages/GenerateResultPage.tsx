@@ -47,7 +47,7 @@ export default function GenerateResultPage() {
     return createMockWordResult({
       words: source.words.map((word) => word.word),
       theme: 'auto',
-      cardMode: 'scene',
+      cardMode: inferWordCardMode(source),
     })
   }
 
@@ -164,4 +164,9 @@ export default function GenerateResultPage() {
       </section>
     </PageShell>
   )
+}
+
+function inferWordCardMode(result: Extract<GenerationResult, { type: 'word-card' }>) {
+  if (result.cardMode) return result.cardMode
+  return result.templateId === 'blank_word_card_30' ? 'simple' : 'scene'
 }

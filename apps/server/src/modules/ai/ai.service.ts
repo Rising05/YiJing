@@ -102,6 +102,7 @@ export class AiService {
         ...plan,
         id: '',
         type: 'word-card',
+        cardMode: dto.cardMode,
         backgroundImageUrl: '',
         imagePrompt,
         watermarkText: '忆境 MemoryPalace',

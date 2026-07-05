@@ -67,6 +67,7 @@ export function createWordCardMock(words: string[], cardMode: 'scene' | 'associa
     id: '',
     title: cardMode === 'simple' ? '单词信息卡片' : '单词记忆卡片',
     type: 'word-card',
+    cardMode,
     templateId,
     backgroundImageUrl: '',
     words: normalized.map((word, index) => {

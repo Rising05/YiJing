@@ -52,10 +52,13 @@ async function main() {
     body: JSON.stringify({
       words: ['passport', 'luggage', 'boarding gate'],
       theme: 'auto',
-      cardMode: 'scene',
+      cardMode: 'simple',
     }),
   })
   if (!wordResult.id || wordResult.type !== 'word-card') throw new Error('word generation returned invalid result')
+  if (wordResult.cardMode !== 'simple' || wordResult.templateId !== 'blank_word_card_30') {
+    throw new Error('word generation did not preserve simple card mode')
+  }
   console.log('word-card:', wordResult.id)
 
   const regenerated = await request(`/generation/${textResult.id}/regenerate`, {
@@ -70,8 +73,20 @@ async function main() {
   }
   console.log('regenerate:', regenerated.id)
 
+  const regeneratedWord = await request(`/generation/${wordResult.id}/regenerate`, {
+    method: 'POST',
+    headers: auth(token),
+  })
+  if (!regeneratedWord.id || regeneratedWord.id === wordResult.id || regeneratedWord.type !== 'word-card') {
+    throw new Error('word regenerate returned invalid result')
+  }
+  if (regeneratedWord.cardMode !== 'simple' || regeneratedWord.templateId !== 'blank_word_card_30') {
+    throw new Error('word regenerate did not preserve simple card mode')
+  }
+  console.log('word regenerate:', regeneratedWord.id)
+
   const history = await request('/history', { headers: auth(token) })
-  if (!Array.isArray(history) || history.length < 3) throw new Error('history did not include generated records')
+  if (!Array.isArray(history) || history.length < 4) throw new Error('history did not include generated records')
   console.log('history:', history.length)
 
   const detail = await request(`/history/${textResult.id}`, { headers: auth(token) })

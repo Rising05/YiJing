@@ -12,6 +12,7 @@ export function createMockWordResult(request: WordCardRequest): WordCardResult {
     id: `word-${now.getTime()}`,
     title: request.cardMode === 'simple' ? '单词信息卡片' : '单词记忆卡片',
     type: 'word-card',
+    cardMode: request.cardMode,
     templateId,
     backgroundImageUrl: '',
     words: request.words.map((word, index) => {

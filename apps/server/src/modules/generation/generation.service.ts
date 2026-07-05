@@ -86,7 +86,7 @@ export class GenerationService {
       })
     }
     const words = Array.isArray(record.inputWords) ? (record.inputWords as string[]) : []
-    return this.createWordCard(userId, { words, theme: 'auto', cardMode: 'scene' })
+    return this.createWordCard(userId, { words, theme: 'auto', cardMode: this.inferWordCardMode(record.resultJson) })
   }
 
   private normalizeWords(input: string[]) {
@@ -116,6 +116,17 @@ export class GenerationService {
       throw new BadRequestException({ code: 'INSUFFICIENT_CREDITS', message: '生成次数不足，请稍后补充次数。' })
     }
     return quota
+  }
+
+  private inferWordCardMode(resultJson: unknown): WordCardDto['cardMode'] {
+    if (resultJson && typeof resultJson === 'object' && !Array.isArray(resultJson)) {
+      const result = resultJson as Record<string, unknown>
+      if (result.cardMode === 'scene' || result.cardMode === 'association' || result.cardMode === 'simple') {
+        return result.cardMode
+      }
+      if (result.templateId === 'blank_word_card_30') return 'simple'
+    }
+    return 'scene'
   }
 
   private async saveRecord(
