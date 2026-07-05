@@ -6,6 +6,7 @@ import { deleteHistory, fetchHistory, toggleHistoryFavorite } from '../services/
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
 import type { GenerationResult } from '../types'
+import { getUserFacingErrorMessage } from '../utils/apiError'
 import PageShell from './PageShell'
 
 export default function HistoryPage() {
@@ -16,24 +17,36 @@ export default function HistoryPage() {
   const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'backgroundImageUrl' | 'createdAt' | 'expiresAt' | 'isFavorite'>> | null>(null)
   const [loading, setLoading] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!token || token === 'local-mock-token') {
       setRemoteRecords(null)
+      setError('')
       return
     }
     setLoading(true)
+    setError('')
     fetchHistory(token)
       .then(setRemoteRecords)
-      .catch(() => setRemoteRecords(null))
+      .catch((error) => {
+        setRemoteRecords(null)
+        setError(getUserFacingErrorMessage(error, '后端历史读取失败，已显示本地缓存'))
+      })
       .finally(() => setLoading(false))
   }, [token])
 
   const records = remoteRecords ?? localRecords
 
   async function handleDelete(id: string) {
+    setError('')
     if (token && token !== 'local-mock-token') {
-      await deleteHistory(token, id).catch(() => undefined)
+      try {
+        await deleteHistory(token, id)
+      } catch (error) {
+        setError(getUserFacingErrorMessage(error, '删除失败，请稍后重试'))
+        return
+      }
       setRemoteRecords((items) => items?.filter((item) => item.id !== id) ?? null)
     }
     removeRecord(id)
@@ -42,8 +55,15 @@ export default function HistoryPage() {
 
   async function handleFavorite(id: string, currentValue?: boolean) {
     const nextValue = !currentValue
+    setError('')
     if (token && token !== 'local-mock-token') {
-      const updated = await toggleHistoryFavorite(token, id).catch(() => null)
+      let updated: Awaited<ReturnType<typeof toggleHistoryFavorite>>
+      try {
+        updated = await toggleHistoryFavorite(token, id)
+      } catch (error) {
+        setError(getUserFacingErrorMessage(error, '收藏状态同步失败，请稍后重试'))
+        return
+      }
       const favoriteValue = updated?.isFavorite ?? nextValue
       setRemoteRecords((items) => items?.map((item) => item.id === id ? { ...item, isFavorite: favoriteValue } : item) ?? null)
       setFavorite(id, favoriteValue)
@@ -56,6 +76,7 @@ export default function HistoryPage() {
     <PageShell>
       <h1 className="text-2xl font-black">历史记录</h1>
       <p className="mt-2 text-sm text-ink/60">{token && token !== 'local-mock-token' ? '优先读取后端 MySQL 历史，失败时回退本地缓存。' : '当前使用本地缓存历史。'}</p>
+      {error ? <p className="mt-3 text-sm text-coral" data-testid="history-error">{error}</p> : null}
       <div className="mt-5 grid gap-3">
         {loading ? (
           <LiquidGlassCard>

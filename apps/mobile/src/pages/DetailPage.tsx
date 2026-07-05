@@ -7,6 +7,7 @@ import { fetchHistoryDetail, toggleHistoryFavorite } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
 import type { GenerationResult, MemoryPalaceResult, WordCardResult } from '../types'
+import { getUserFacingErrorMessage } from '../utils/apiError'
 import PageShell from './PageShell'
 
 export default function DetailPage() {
@@ -17,25 +18,37 @@ export default function DetailPage() {
   const token = useAuthStore((state) => state.token)
   const [remoteRecord, setRemoteRecord] = useState<GenerationResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const record = localRecord ?? remoteRecord
 
   useEffect(() => {
     if (localRecord || !token || token === 'local-mock-token' || !id) return
     setLoading(true)
+    setError('')
     fetchHistoryDetail(token, id)
       .then((result) => {
         setRemoteRecord(result)
         addRecord(result)
       })
-      .catch(() => setRemoteRecord(null))
+      .catch((error) => {
+        setRemoteRecord(null)
+        setError(getUserFacingErrorMessage(error, '读取历史详情失败'))
+      })
       .finally(() => setLoading(false))
   }, [addRecord, id, localRecord, token])
 
   async function handleFavorite() {
     if (!record) return
     const nextValue = !record.isFavorite
+    setError('')
     if (token && token !== 'local-mock-token') {
-      const updated = await toggleHistoryFavorite(token, record.id).catch(() => null)
+      let updated: Awaited<ReturnType<typeof toggleHistoryFavorite>>
+      try {
+        updated = await toggleHistoryFavorite(token, record.id)
+      } catch (error) {
+        setError(getUserFacingErrorMessage(error, '收藏状态同步失败，请稍后重试'))
+        return
+      }
       const favoriteValue = updated?.isFavorite ?? nextValue
       setFavorite(record.id, favoriteValue)
       setRemoteRecord((item) => item?.id === record.id ? { ...item, isFavorite: favoriteValue } : item)
@@ -50,6 +63,7 @@ export default function DetailPage() {
         <LiquidGlassCard>
           <div className="p-5">
             <h1 className="text-xl font-black">{loading ? '正在读取记录' : '记录不存在'}</h1>
+            {error ? <p className="mt-3 text-sm leading-6 text-coral" data-testid="detail-error">{error}</p> : null}
             <Link to="/history">
               <GlassButton className="mt-4 w-full">返回历史</GlassButton>
             </Link>
@@ -63,6 +77,7 @@ export default function DetailPage() {
     <PageShell>
       <h1 className="text-2xl font-black">{record.title}</h1>
       <p className="mt-2 text-sm text-ink/60">{new Date(record.createdAt).toLocaleString()}</p>
+      {error ? <p className="mt-3 text-sm text-coral" data-testid="detail-error">{error}</p> : null}
       <div className="mt-5 grid gap-3">
         <GlassButton variant="secondary" onClick={() => void handleFavorite()}>
           <Star className="h-4 w-4" fill={record.isFavorite ? 'currentColor' : 'none'} />

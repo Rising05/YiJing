@@ -6,17 +6,20 @@ import { APP_VERSION } from '../constants/app'
 import { deleteAccount } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
+import { getUserFacingErrorMessage } from '../utils/apiError'
 import PageShell from './PageShell'
 
 export default function SettingsPage() {
   const [confirmAction, setConfirmAction] = useState<'clear-cache' | 'delete-account' | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState('')
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token)
   const logout = useAuthStore((state) => state.logout)
   const clearRecords = useHistoryStore((state) => state.clearRecords)
 
   function clearCache() {
+    setError('')
     localStorage.removeItem('memory-palace-history')
     clearRecords()
     setConfirmAction(null)
@@ -24,17 +27,24 @@ export default function SettingsPage() {
 
   async function handleDeleteAccount() {
     setDeleting(true)
-    if (token && token !== 'local-mock-token') {
-      await deleteAccount(token).catch(() => undefined)
+    setError('')
+    try {
+      if (token && token !== 'local-mock-token') {
+        await deleteAccount(token)
+      }
+      clearCache()
+      logout()
+    } catch (error) {
+      setError(getUserFacingErrorMessage(error, '删除账号失败，请稍后重试'))
+    } finally {
+      setDeleting(false)
     }
-    clearCache()
-    logout()
-    setDeleting(false)
   }
 
   return (
     <PageShell>
       <h1 className="text-2xl font-black">我的</h1>
+      {error ? <p className="mt-3 text-sm text-coral" data-testid="settings-error">{error}</p> : null}
       <div className="mt-5 grid gap-3">
         <LiquidGlassCard>
           <div className="p-4">
