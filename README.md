@@ -96,6 +96,7 @@ npm run build:mobile
 - 历史读取、收藏、删除和删除账号失败时会展示用户可见错误；删除类后端操作失败时不会提前清除本地状态或退出账号。
 - 本地历史缓存会按 `expiresAt` 自动过滤过期记录，避免 localStorage 无限保留超过 30 天的生成结果。
 - 后端历史列表、详情、收藏、删除和重新生成都会过滤过期记录，过期内容对用户表现为不存在。
+- 后端 JWT 守卫会校验用户仍存在且未删除；删除账号后旧 token 会稳定返回 `UNAUTHORIZED`。
 - 文本生成、单词生成、结果页和关于页都会展示 AI 学习辅助免责声明。
 - PNG 导出在浏览器本地合成，不上传服务器。
 - 后端校验错误会映射为稳定业务码，例如 `INPUT_TOO_LONG`、`TOO_MANY_WORDS`、`INVALID_INPUT`。
@@ -110,7 +111,7 @@ npm run build:mobile
 - `npm run check:tracking-sdk` 会扫描移动端依赖、lockfile 和原生配置，防止广告、归因、统计追踪、ATT、SKAdNetwork 等无关 SDK 进入 MVP。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
-- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断和无水平溢出已纳入 UI smoke。
+- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断和无水平溢出已纳入 390px/569px UI smoke。
 - 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
 

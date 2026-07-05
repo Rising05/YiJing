@@ -41,35 +41,24 @@ try {
   await page.evaluate('localStorage.clear(); sessionStorage.clear();')
   await page.send('Page.reload')
   await page.waitFor(() => document.body.innerText.includes('今天要记什么？'))
-  const homeCardMetrics = await page.evaluate(`(() => {
-    const link = document.querySelector('[data-testid="home-text-memory-link"]');
-    const shell = link?.querySelector('.glass-shell');
-    const wrapper = link?.querySelector('.glass > div');
-    const fallback = link?.querySelector('.glass-fallback');
-    const read = (element) => {
-      const rect = element.getBoundingClientRect();
-      const style = getComputedStyle(element);
-      return {
-        left: rect.left,
-        right: rect.right,
-        width: rect.width,
-        borderRadius: style.borderRadius,
-        overflow: style.overflow,
-      };
-    };
-    return {
-      viewportWidth: window.innerWidth,
-      documentWidth: document.documentElement.scrollWidth,
-      shell: read(shell),
-      wrapper: read(wrapper),
-      fallback: read(fallback),
-    };
-  })()`)
-  assert(homeCardMetrics.documentWidth <= homeCardMetrics.viewportWidth, 'Homepage should not have horizontal overflow')
-  assert(homeCardMetrics.shell.left >= 0 && homeCardMetrics.fallback.left >= 0, 'Homepage glass card should not be clipped on the left')
-  assert(homeCardMetrics.shell.right <= homeCardMetrics.viewportWidth && homeCardMetrics.fallback.right <= homeCardMetrics.viewportWidth, 'Homepage glass card should not be clipped on the right')
-  assert(homeCardMetrics.shell.overflow === 'hidden' && homeCardMetrics.fallback.overflow === 'hidden', 'Homepage glass card should clip square liquid layers')
-  assert(homeCardMetrics.wrapper.borderRadius === '24px' && homeCardMetrics.fallback.borderRadius === '24px', 'Homepage glass card should preserve rounded corners')
+  await assertHomeCardLayout(page, 390)
+  await page.send('Emulation.setDeviceMetricsOverride', {
+    width: 569,
+    height: 995,
+    deviceScaleFactor: 1,
+    mobile: true,
+  })
+  await page.send('Page.reload')
+  await page.waitFor(() => document.body.innerText.includes('今天要记什么？'))
+  await assertHomeCardLayout(page, 569)
+  await page.send('Emulation.setDeviceMetricsOverride', {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: true,
+  })
+  await page.send('Page.reload')
+  await page.waitFor(() => document.body.innerText.includes('今天要记什么？'))
 
   await page.click('[data-testid="home-text-memory-link"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="text-memory-page"]')))
@@ -203,6 +192,51 @@ async function openPage() {
       throw new Error(`Timed out waiting for ${predicate.toString()}`)
     },
   }
+}
+
+async function assertHomeCardLayout(page, expectedViewportWidth) {
+  const homeCardMetrics = await page.evaluate(`(() => {
+    const link = document.querySelector('[data-testid="home-text-memory-link"]');
+    const read = (name, element) => {
+      const rect = element?.getBoundingClientRect();
+      const style = element ? getComputedStyle(element) : null;
+      return {
+        name,
+        missing: !element,
+        left: rect?.left ?? 0,
+        right: rect?.right ?? 0,
+        width: rect?.width ?? 0,
+        borderRadius: style?.borderRadius ?? '',
+        overflow: style?.overflow ?? '',
+      };
+    };
+    return {
+      expectedViewportWidth: ${expectedViewportWidth},
+      viewportWidth: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      link: read('link', link),
+      shell: read('shell', link?.querySelector('.glass-shell')),
+      liquid: read('liquid', link?.querySelector('.glass-liquid')),
+      svg: read('svg', link?.querySelector('.glass-liquid > svg')),
+      glass: read('glass', link?.querySelector('.glass-liquid > .glass')),
+      wrapper: read('wrapper', link?.querySelector('.glass-liquid > .glass > div')),
+      fallback: read('fallback', link?.querySelector('.glass-fallback')),
+      content: read('content', link?.querySelector('.glass-fallback > div')),
+    };
+  })()`)
+  const layers = ['link', 'shell', 'liquid', 'svg', 'glass', 'wrapper', 'fallback']
+  assert(homeCardMetrics.viewportWidth === expectedViewportWidth, `Homepage viewport should be ${expectedViewportWidth}px`)
+  assert(homeCardMetrics.documentWidth <= homeCardMetrics.viewportWidth, 'Homepage should not have horizontal overflow')
+  for (const layer of layers) {
+    const metrics = homeCardMetrics[layer]
+    assert(!metrics.missing && metrics.width > 0, `Homepage glass card layer is missing: ${layer}`)
+    assert(metrics.left >= -0.5, `Homepage glass card ${layer} should not be clipped on the left`)
+    assert(metrics.right <= homeCardMetrics.viewportWidth + 0.5, `Homepage glass card ${layer} should not be clipped on the right`)
+    assert(metrics.overflow === 'hidden', `Homepage glass card ${layer} should clip square liquid layers`)
+    assert(metrics.borderRadius === '24px', `Homepage glass card ${layer} should preserve rounded corners`)
+  }
+  assert(homeCardMetrics.content.left >= homeCardMetrics.fallback.left - 0.5, 'Homepage glass card content should stay inside fallback on the left')
+  assert(homeCardMetrics.content.right <= homeCardMetrics.fallback.right + 0.5, 'Homepage glass card content should stay inside fallback on the right')
 }
 
 async function waitForJson(url, timeoutMs = 5000) {

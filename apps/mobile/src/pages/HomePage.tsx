@@ -25,8 +25,8 @@ export default function HomePage() {
       <p className="mb-5 text-sm leading-6 text-ink/62">把难背的内容变成一张能看懂的记忆图。</p>
 
       <div className="grid min-w-0 gap-4">
-        <Link className="block min-w-0" to="/text-memory" data-testid="home-text-memory-link">
-          <LiquidGlassCard interactive>
+        <Link className="home-entry-link block min-w-0 overflow-hidden rounded-[24px]" to="/text-memory" data-testid="home-text-memory-link">
+          <LiquidGlassCard interactive className="home-entry-card" displacementScale={6} aberrationIntensity={0.18} elasticity={0.04}>
             <div className="min-w-0 p-5">
               <BookOpen className="h-7 w-7 text-leaf" />
               <h2 className="mt-4 text-xl font-black">文本记忆宫殿</h2>
@@ -37,8 +37,8 @@ export default function HomePage() {
             </div>
           </LiquidGlassCard>
         </Link>
-        <Link className="block min-w-0" to="/word-card" data-testid="home-word-card-link">
-          <LiquidGlassCard interactive>
+        <Link className="home-entry-link block min-w-0 overflow-hidden rounded-[24px]" to="/word-card" data-testid="home-word-card-link">
+          <LiquidGlassCard interactive className="home-entry-card" displacementScale={6} aberrationIntensity={0.18} elasticity={0.04}>
             <div className="min-w-0 p-5">
               <Type className="h-7 w-7 text-coral" />
               <h2 className="mt-4 text-xl font-black">单词记忆卡片</h2>

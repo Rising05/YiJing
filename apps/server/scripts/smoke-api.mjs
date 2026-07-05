@@ -16,6 +16,24 @@ async function request(path, options = {}) {
   return body
 }
 
+async function expectRequestFailure(path, options = {}, expectedCode) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  })
+  const body = await response.json().catch(() => null)
+  if (response.ok) {
+    throw new Error(`${options.method ?? 'GET'} ${path} unexpectedly succeeded`)
+  }
+  if (expectedCode && body?.code !== expectedCode) {
+    throw new Error(`${options.method ?? 'GET'} ${path} failed with ${body?.code ?? 'unknown'}, expected ${expectedCode}`)
+  }
+  return body
+}
+
 function auth(token) {
   return { Authorization: `Bearer ${token}` }
 }
@@ -110,6 +128,9 @@ async function main() {
     headers: auth(token),
   })
   console.log('delete account: ok')
+
+  await expectRequestFailure('/history', { headers: auth(token) }, 'UNAUTHORIZED')
+  console.log('deleted token rejected: ok')
 }
 
 main().catch((error) => {
