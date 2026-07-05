@@ -92,6 +92,7 @@ npm run build:mobile
 - 结果页支持 Web Share 原生分享 PNG；当前环境不支持分享文件时自动下载保存。
 - 历史列表和详情页支持收藏；真实后端可用时同步 MySQL，本地 mock 时写入 localStorage。
 - 历史读取、收藏、删除和删除账号失败时会展示用户可见错误；删除类后端操作失败时不会提前清除本地状态或退出账号。
+- 本地历史缓存会按 `expiresAt` 自动过滤过期记录，避免 localStorage 无限保留超过 30 天的生成结果。
 - 文本生成、单词生成、结果页和关于页都会展示 AI 学习辅助免责声明。
 - PNG 导出在浏览器本地合成，不上传服务器。
 - 后端校验错误会映射为稳定业务码，例如 `INPUT_TOO_LONG`、`TOO_MANY_WORDS`、`INVALID_INPUT`。

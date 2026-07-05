@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { GenerationResult } from '../types'
 
+const now = () => Date.now()
+
 interface HistoryState {
   records: GenerationResult[]
   addRecord: (record: GenerationResult) => void
@@ -17,16 +19,37 @@ export const useHistoryStore = create<HistoryState>()(
       records: [],
       addRecord: (record) =>
         set((state) => ({
-          records: [record, ...state.records.filter((item) => item.id !== record.id)],
+          records: [record, ...pruneExpiredRecords(state.records).filter((item) => item.id !== record.id)],
         })),
       removeRecord: (id) => set((state) => ({ records: state.records.filter((item) => item.id !== id) })),
       setFavorite: (id, isFavorite) =>
         set((state) => ({
-          records: state.records.map((item) => item.id === id ? { ...item, isFavorite } : item),
+          records: pruneExpiredRecords(state.records).map((item) => item.id === id ? { ...item, isFavorite } : item),
         })),
       clearRecords: () => set({ records: [] }),
-      getRecord: (id) => get().records.find((item) => item.id === id),
+      getRecord: (id) => {
+        const records = pruneExpiredRecords(get().records)
+        if (records.length !== get().records.length) set({ records })
+        return records.find((item) => item.id === id)
+      },
     }),
-    { name: 'memory-palace-history' },
+    {
+      name: 'memory-palace-history',
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...(persistedState as Partial<HistoryState>),
+        records: pruneExpiredRecords((persistedState as Partial<HistoryState>)?.records ?? []),
+      }),
+    },
   ),
 )
+
+function pruneExpiredRecords(records: GenerationResult[]) {
+  return records.filter((record) => !isExpired(record))
+}
+
+function isExpired(record: GenerationResult) {
+  const expiresAt = new Date(record.expiresAt).getTime()
+  if (Number.isNaN(expiresAt)) return false
+  return expiresAt <= now()
+}
