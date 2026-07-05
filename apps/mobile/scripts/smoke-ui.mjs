@@ -294,6 +294,7 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
         display: style?.display ?? '',
         padding: style?.padding ?? '',
         gap: style?.gap ?? '',
+        zIndex: style?.zIndex ?? '',
       };
     };
     return {
@@ -327,7 +328,7 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
     assert(metrics.borderRadius === '24px', `Homepage glass card ${layer} should preserve rounded corners`)
     assert(metrics.clipPath.includes('round 24px'), `Homepage glass card ${layer} should use a rounded clip-path`)
   }
-  assert(homeCardMetrics.wrapper.position === 'relative', 'Homepage glass card wrapper should not inherit absolute library positioning')
+  assert(homeCardMetrics.wrapper.position === 'absolute', 'Homepage glass effect wrapper should stay in the absolute background layer')
   assert(homeCardMetrics.wrapper.transform === 'none', 'Homepage glass card wrapper should not inherit library transforms')
   assert(homeCardMetrics.liquid.left === homeCardMetrics.shell.left, 'Homepage liquid layer should align with shell on the left')
   assert(homeCardMetrics.liquid.top === homeCardMetrics.shell.top, 'Homepage liquid layer should align with shell on the top')
@@ -335,8 +336,12 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
   assert(homeCardMetrics.glass.padding === '0px', 'Homepage liquid glass inner layer should not add library padding')
   assert(homeCardMetrics.glass.gap === '0px', 'Homepage liquid glass inner layer should not add library gap')
   assert(homeCardMetrics.wrapper.display === 'block', 'Homepage glass card wrapper should use block layout')
-  assert(homeCardMetrics.wrapper.left === homeCardMetrics.fallback.left, 'Homepage glass card wrapper and fallback should align on the left')
-  assert(homeCardMetrics.wrapper.top === homeCardMetrics.fallback.top, 'Homepage glass card wrapper and fallback should align on the top')
+  assert(homeCardMetrics.fallback.position === 'relative', 'Homepage fallback content should stay in normal layout above the effect layer')
+  assert(homeCardMetrics.fallback.zIndex === '1', 'Homepage fallback content should render above the liquid effect layer')
+  assert(homeCardMetrics.wrapper.left === homeCardMetrics.shell.left, 'Homepage glass effect wrapper should align with shell on the left')
+  assert(homeCardMetrics.wrapper.top === homeCardMetrics.shell.top, 'Homepage glass effect wrapper should align with shell on the top')
+  assert(homeCardMetrics.fallback.left === homeCardMetrics.shell.left, 'Homepage fallback content should align with shell on the left')
+  assert(homeCardMetrics.fallback.top === homeCardMetrics.shell.top, 'Homepage fallback content should align with shell on the top')
   assert(homeCardMetrics.content.left >= homeCardMetrics.fallback.left - 0.5, 'Homepage glass card content should stay inside fallback on the left')
   assert(homeCardMetrics.content.right <= homeCardMetrics.fallback.right + 0.5, 'Homepage glass card content should stay inside fallback on the right')
 }

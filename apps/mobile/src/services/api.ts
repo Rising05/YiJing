@@ -1,6 +1,6 @@
 import type { GenerationResult, MemoryPalaceResult, TextMemoryRequest, WordCardRequest, WordCardResult } from '../types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api'
+const API_BASE_URL = getApiBaseUrl()
 
 interface LoginResponse {
   token: string
@@ -22,7 +22,17 @@ export class ApiError extends Error {
   }
 }
 
+export function getApiBaseUrl(env: ImportMetaEnv = import.meta.env) {
+  const configured = env.VITE_API_BASE_URL?.trim()
+  if (configured) return configured.replace(/\/$/, '')
+  if (env.DEV) return 'http://localhost:3000/api'
+  return ''
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  if (!API_BASE_URL) {
+    throw new ApiError('服务端 API 地址未配置，请检查发布环境。', 'API_BASE_URL_MISSING', 0)
+  }
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: {

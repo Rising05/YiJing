@@ -7,6 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "check:frontend-secrets": "node scripts/check-frontend-secrets.mjs",
+    "check:mobile-runtime-config": "node scripts/check-mobile-runtime-config.mjs",
     "check:permissions": "node scripts/check-permissions.mjs",
     "check:release-metadata": "node scripts/check-release-metadata.mjs",
     "check:release-env": "node scripts/check-release-env.mjs",

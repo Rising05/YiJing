@@ -23,6 +23,7 @@
     "check:frontend-secrets": "npm run check:frontend-secrets -w apps/mobile",
     "check:image-prompts": "npm run check:image-prompts -w apps/server",
     "check:image-storage": "npm run check:image-storage -w apps/server",
+    "check:mobile-runtime-config": "npm run check:mobile-runtime-config -w apps/mobile",
     "check:production-config": "npm run check:production-config -w apps/server",
     "check:production-redaction": "npm run check:production-redaction -w apps/server",
     "check:permissions": "npm run check:permissions -w apps/mobile",

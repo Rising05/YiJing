@@ -19,6 +19,7 @@ const steps = [
   ['check:production-redaction', ['run', 'check:production-redaction']],
   ['build:mobile', ['run', 'build:mobile']],
   ['check:frontend-secrets', ['run', 'check:frontend-secrets']],
+  ['check:mobile-runtime-config', ['run', 'check:mobile-runtime-config']],
   ['check:permissions', ['run', 'check:permissions']],
   ['check:tracking-sdk', ['run', 'check:tracking-sdk']],
   ['check:release-metadata', ['run', 'check:release-metadata']],
