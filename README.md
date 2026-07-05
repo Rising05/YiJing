@@ -119,10 +119,10 @@ npm run build:mobile
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
 - `npm run check:release-metadata` 会校验 Capacitor appId/App 名、Android applicationId/namespace/strings、前端版本和 Android `versionName` 是否一致。
-- `LiquidGlassCard` 继续封装 `liquid-glass-react`，但真实内容层已和库动效层解耦：库只负责绝对铺满的玻璃背景，我们自己的 `.glass-fallback` 负责圆角、边框、阴影和内容布局；首页入口卡片圆角裁切、左右不被截断、fallback 位于动效层之上和无水平溢出已纳入 390px/569px UI smoke。
+- `LiquidGlassCard` 继续封装 `liquid-glass-react`，但真实内容层已和库动效层解耦：库只负责绝对铺满的玻璃背景，我们自己的 `.glass-fallback` 负责圆角、边框、阴影和内容布局；首页入口卡片圆角裁切、左右不被截断、fallback 位于动效层之上、内容层本身圆角裁切、禁止 fallback 回到库内部 wrapper 和无水平溢出已纳入 390px/569px UI smoke。
 - 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
-- `npm run check:mobile-layout` 会检查移动端 safe area、44px 以上按钮触控高度、底部导航触控高度，以及 Liquid Glass 内容层/动效层布局约束。
+- `npm run check:mobile-layout` 会检查移动端 safe area、44px 以上按钮触控高度、底部导航触控高度，以及 Liquid Glass 内容层/动效层/首页标注内容层布局约束。
 - 移动端发布构建必须配置 `VITE_API_BASE_URL`，开发环境未配置时才会 fallback 到 `http://localhost:3000/api`；生产缺失时 API client 会返回明确的 `API_BASE_URL_MISSING` 错误。
 
 ## 后端运行

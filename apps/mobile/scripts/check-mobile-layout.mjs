@@ -12,6 +12,7 @@ const files = {
   bottomTabBar: readSource('src/components/BottomTabBar.tsx'),
   authModal: readSource('src/components/AuthModal.tsx'),
   glassButton: readSource('src/components/GlassButton.tsx'),
+  homePage: readSource('src/pages/HomePage.tsx'),
   liquidGlassCard: readSource('src/components/LiquidGlassCard.tsx'),
   styles: readSource('src/styles/globals.css'),
 }
@@ -83,12 +84,19 @@ function checkLiquidGlassLayout() {
     '<div className="glass-fallback">{children}</div>',
     'LiquidGlassCard content must render in the owned fallback layer',
   )
+  assertIncludes(
+    files.homePage,
+    'home-entry-content min-w-0 p-5',
+    'Homepage entry content must have its own rounded clipping class for browser annotations',
+  )
 
   assertIncludes(files.styles, '.glass-shell {', 'globals.css must define the glass shell')
   assertIncludes(files.styles, 'clip-path: inset(0 round 24px);', 'Glass layers must keep rounded clipping')
   assertIncludes(files.styles, '.glass-shell > .glass-liquid {', 'globals.css must scope the liquid effect layer')
   assertIncludes(files.styles, 'pointer-events: none;', 'Liquid effect layer must not steal taps from card content')
   assertIncludes(files.styles, '.glass-fallback {', 'globals.css must define the fallback content layer')
+  assertIncludes(files.styles, '.glass-shell .glass-liquid .glass-fallback {', 'globals.css must round old nested fallback paths as a compatibility guard')
+  assertIncludes(files.styles, '.home-entry-card .home-entry-content {', 'Homepage entry content must preserve rounded clipping')
   assertIncludes(files.styles, 'z-index: 1;', 'Fallback content layer must render above the liquid effect')
 }
 

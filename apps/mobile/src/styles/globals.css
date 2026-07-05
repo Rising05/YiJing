@@ -144,13 +144,20 @@ a {
   clip-path: inset(0 round 24px);
 }
 
+.glass-shell .glass-liquid .glass-fallback {
+  border-radius: inherit;
+  overflow: hidden;
+  clip-path: inset(0 round 24px);
+}
+
 .home-entry-link,
 .home-entry-card,
 .home-entry-card .glass-liquid,
 .home-entry-card .glass,
 .home-entry-card .transition-all,
 .home-entry-card .glass > div,
-.home-entry-card .glass-fallback {
+.home-entry-card .glass-fallback,
+.home-entry-card .home-entry-content {
   width: 100%;
   max-width: 100%;
   border-radius: 24px;

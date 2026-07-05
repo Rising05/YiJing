@@ -310,11 +310,13 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
       wrapper: read('wrapper', link?.querySelector('.glass-liquid > .glass > div')),
       fallback: read('fallback', link?.querySelector('.glass-fallback')),
       content: read('content', link?.querySelector('.glass-fallback > div')),
+      nestedFallbackCount: link?.querySelectorAll('.glass-liquid .glass-fallback')?.length ?? 0,
     };
   })()`)
-  const layers = ['link', 'shell', 'liquid', 'svg', 'glass', 'wrapper', 'fallback']
+  const layers = ['link', 'shell', 'liquid', 'svg', 'glass', 'wrapper', 'fallback', 'content']
   assert(homeCardMetrics.viewportWidth === expectedViewportWidth, `Homepage viewport should be ${expectedViewportWidth}px`)
   assert(homeCardMetrics.documentWidth <= homeCardMetrics.viewportWidth, 'Homepage should not have horizontal overflow')
+  assert(homeCardMetrics.nestedFallbackCount === 0, 'Homepage content fallback must stay outside liquid-glass-react internal wrappers')
   assert(homeCardMetrics.main.left >= -0.5, 'Homepage main should stay inside viewport on the left')
   assert(homeCardMetrics.main.right <= homeCardMetrics.viewportWidth + 0.5, 'Homepage main should stay inside viewport on the right')
   assert(homeCardMetrics.link.left > 0, 'Homepage glass card should not touch or disappear behind the left viewport edge')
