@@ -86,7 +86,7 @@ npm run build:mobile
 前端当前行为：
 
 - 优先请求后端 mock API。
-- 后端或数据库不可用时自动回退本地 mock。
+- 开发环境下，后端或数据库不可用时自动回退本地 mock；生产发布环境禁止本地 mock 登录、生成和重新生成回退，必须连接服务端后才能继续。
 - 本地登录状态只持久化 `user` 和 `token`，不会跨刷新保存登录弹窗开关或待执行动作。
 - 测试登录失败统一使用 `INVALID_INPUT` 错误码，避免出现后端私有错误码。
 - 后端已预留正式短信和微信登录端点：`POST /api/auth/sms-code`、`POST /api/auth/sms-login`、`POST /api/auth/wechat-login`。在短信服务商和微信开放平台未配置前，这些端点统一返回 `FEATURE_NOT_CONFIGURED`，不会误发 token 或创建正式用户。
@@ -411,7 +411,7 @@ npm run smoke:ui
 
 `npm run check:mobile-layout` 会检查 `GlassButton`、底部导航、页面壳、登录弹窗和 Liquid Glass 卡片的关键移动端布局约束，覆盖 SPEC 技术验收中的按钮触控高度和 safe area 基线。
 
-`npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`。
+`npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`；本地 mock 登录、生成和重新生成回退也必须受开发环境开关保护，生产发布包不能静默离线生成。
 
 `npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、mobile build、前端密钥/移动端布局/移动端运行配置/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 

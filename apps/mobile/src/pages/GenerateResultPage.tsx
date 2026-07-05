@@ -10,6 +10,7 @@ import WordMemoryCard from '../components/WordMemoryCard'
 import { createMockMemoryResult } from '../mocks/memoryMock'
 import { createMockWordResult } from '../mocks/wordMock'
 import { ApiError, regenerateGeneration } from '../services/api'
+import { assertLocalMockFallbackAllowed } from '../services/localMockPolicy'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -71,10 +72,12 @@ export default function GenerateResultPage() {
       const nextResult = token && token !== 'local-mock-token'
         ? await regenerateGeneration(token, result.id).catch((error) => {
             if (error instanceof ApiError) throw error
+            assertLocalMockFallbackAllowed()
             if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
             return createLocalRegeneration(result)
           })
         : (() => {
+            assertLocalMockFallbackAllowed()
             if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
             return createLocalRegeneration(result)
           })()

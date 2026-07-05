@@ -6,10 +6,16 @@ const scriptDir = dirname(fileURLToPath(import.meta.url))
 const mobileRoot = resolve(scriptDir, '..')
 const envPath = resolve(mobileRoot, '.env.production.example')
 const apiSourcePath = resolve(mobileRoot, 'src/services/api.ts')
+const mockPolicyPath = resolve(mobileRoot, 'src/services/localMockPolicy.ts')
+const authStorePath = resolve(mobileRoot, 'src/stores/authStore.ts')
+const textMemoryPath = resolve(mobileRoot, 'src/pages/TextMemoryPage.tsx')
+const wordCardPath = resolve(mobileRoot, 'src/pages/WordCardPage.tsx')
+const resultPagePath = resolve(mobileRoot, 'src/pages/GenerateResultPage.tsx')
 const errors = []
 
 checkProductionEnvExample()
 checkApiSource()
+checkLocalMockPolicy()
 
 if (errors.length) {
   for (const error of errors) console.error(`mobile-runtime-config: ${error}`)
@@ -63,6 +69,35 @@ function checkApiSource() {
   }
   if (!source.includes("return 'http://localhost:3000/api'")) {
     errors.push('src/services/api.ts should preserve the local development fallback')
+  }
+}
+
+function checkLocalMockPolicy() {
+  const policySource = readFileSync(mockPolicyPath, 'utf8')
+  if (!policySource.includes('env.DEV')) {
+    errors.push('src/services/localMockPolicy.ts must scope local mock fallback to import.meta.env.DEV')
+  }
+  if (!policySource.includes('assertLocalMockFallbackAllowed')) {
+    errors.push('src/services/localMockPolicy.ts must export assertLocalMockFallbackAllowed')
+  }
+  if (!policySource.includes('API_BASE_URL_MISSING')) {
+    errors.push('production mock fallback rejection should use a clear API_BASE_URL_MISSING error')
+  }
+
+  const authSource = readFileSync(authStorePath, 'utf8')
+  if (!authSource.includes('canUseLocalMockFallback()')) {
+    errors.push('authStore must not create a local mock login unless local mock fallback is allowed')
+  }
+
+  for (const [label, filePath] of [
+    ['TextMemoryPage', textMemoryPath],
+    ['WordCardPage', wordCardPath],
+    ['GenerateResultPage', resultPagePath],
+  ]) {
+    const source = readFileSync(filePath, 'utf8')
+    if (!source.includes('assertLocalMockFallbackAllowed')) {
+      errors.push(`${label} must guard local mock generation with assertLocalMockFallbackAllowed`)
+    }
   }
 }
 

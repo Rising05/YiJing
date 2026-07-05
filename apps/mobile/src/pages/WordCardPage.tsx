@@ -6,6 +6,7 @@ import LiquidGlassCard from '../components/LiquidGlassCard'
 import LoadingGenerate from '../components/LoadingGenerate'
 import { createMockWordResult } from '../mocks/wordMock'
 import { ApiError, createWordCard } from '../services/api'
+import { assertLocalMockFallbackAllowed } from '../services/localMockPolicy'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -43,10 +44,12 @@ export default function WordCardPage() {
         const result = token && token !== 'local-mock-token'
           ? await createWordCard(token, request).catch((error) => {
               if (error instanceof ApiError) throw error
+              assertLocalMockFallbackAllowed()
               if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
               return createMockWordResult(request)
             })
           : (() => {
+              assertLocalMockFallbackAllowed()
               if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
               return createMockWordResult(request)
             })()

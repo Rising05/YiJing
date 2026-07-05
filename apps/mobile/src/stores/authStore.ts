@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { testLogin } from '../services/api'
+import { canUseLocalMockFallback } from '../services/localMockPolicy'
 
 interface User {
   id: string
@@ -37,6 +38,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await testLogin(phone, code)
           set({ user: response.user, token: response.token, isAuthOpen: false })
         } catch {
+          if (!canUseLocalMockFallback()) return false
           set({ user: { id: 'test-user', nickname: '测试用户', phone, remainingCredits: 20 }, token: 'local-mock-token', isAuthOpen: false })
         }
         get().pendingAction?.()
