@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
         set({ pendingAction: null })
         return true
       },
-      logout: () => set({ user: null, token: null }),
+      logout: () => set({ user: null, token: null, pendingAction: null, isAuthOpen: false }),
       setRemainingCredits: (remainingCredits) =>
         set((state) => (state.user ? { user: { ...state.user, remainingCredits } } : {})),
       consumeCredit: () => {
@@ -55,6 +55,12 @@ export const useAuthStore = create<AuthState>()(
         return true
       },
     }),
-    { name: 'memory-palace-auth' },
+    {
+      name: 'memory-palace-auth',
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+      }),
+    },
   ),
 )

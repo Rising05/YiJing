@@ -157,6 +157,7 @@
 | 前端本地历史过期清理 | Agent-Frontend/Privacy | Done | `historyStore` 按 `expiresAt` 自动过滤 localStorage 中已过期的生成记录；持久化恢复、添加记录、收藏更新和单条读取都会清理过期项，无效日期保守保留，补齐前端本地缓存与 30 天保存策略的一致性 | `apps/mobile/src/stores/historyStore.ts`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 后端历史过期过滤 | Agent-Backend/Privacy | Done | 后端历史列表、详情、收藏、删除和重新生成统一只处理 `expiresAt > now` 且未删除的记录；过期记录对用户表现为不存在，避免 30 天保存策略被历史接口或重新生成接口绕过 | `apps/server/src/modules/history/history.service.ts`, `apps/server/src/modules/generation/generation.service.ts`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 导出与分享失败反馈 | Agent-Frontend | Done | 导出 PNG 和分享/保存按钮新增 `onError` 回调，结果页将导出渲染、下载或 Web Share 失败映射为统一 `EXPORT_FAILED` 用户文案；开始新导出/分享时清除旧错误，避免导出失败静默无反馈 | `apps/mobile/src/components/ExportImageButton.tsx`, `apps/mobile/src/components/ShareImageButton.tsx`, `apps/mobile/src/pages/GenerateResultPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
+| 登录状态持久化收窄 | Agent-Frontend/Privacy | Done | `authStore` 持久化范围收窄为必要的 `user` 和 `token`，不再跨刷新保存登录弹窗开关或待执行动作；退出登录时同步清理弹窗状态和 pending action，降低 UI 临时状态残留风险 | `apps/mobile/src/stores/authStore.ts`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 
 追加记录模板：
 
