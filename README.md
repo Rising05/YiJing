@@ -240,18 +240,22 @@ PUBLIC_BASE_URL="http://localhost:3000"
 
 `local` 模式会把通义万相返回的远程图片下载到 `apps/server/uploads/generated-images/`，并通过 `/api/images/:fileName` 只读访问。`cleanup:expired-images`、历史单条删除和删除账号都会删除对应本地文件。
 
-后续接阿里云 OSS 时，在 `apps/server/src/modules/image/storage.service.ts` 内补充上传逻辑即可，不需要改 generation service 的调用接口。
-
-历史单条删除和删除账号会调用 `StorageService.deleteImage()` 处理关联背景图。默认 `none/mock` 存储下没有服务端自有对象需要删除；`local` 模式会删除本地文件；接入 OSS 后只需要在 `StorageService` 内补充 vendor SDK 删除逻辑。
-
-预留配置：
+也可以配置阿里云 OSS：
 
 ```env
-OSS_BUCKET=""
-OSS_REGION=""
-OSS_ACCESS_KEY_ID=""
-OSS_ACCESS_KEY_SECRET=""
+STORAGE_PROVIDER="oss"
+OSS_BUCKET="your-bucket"
+OSS_REGION="oss-cn-hangzhou"
+OSS_ENDPOINT=""
+OSS_PUBLIC_BASE_URL=""
+OSS_OBJECT_PREFIX="generated-images"
+OSS_ACCESS_KEY_ID="..."
+OSS_ACCESS_KEY_SECRET="..."
 ```
+
+`oss` 模式会把通义万相返回的远程图片下载后用 OSS 签名 `PUT` 上传到 `OSS_OBJECT_PREFIX`，返回 OSS 公开访问 URL；历史单条删除、删除账号和过期清理会对同一 object key 发送签名 `DELETE`。如使用 CDN 或自定义域名，可配置 `OSS_PUBLIC_BASE_URL`；如使用非默认 endpoint，可配置 `OSS_ENDPOINT`。
+
+历史单条删除和删除账号会调用 `StorageService.deleteImage()` 处理关联背景图。默认 `none/mock` 存储下没有服务端自有对象需要删除；`local` 模式会删除本地文件；`oss` 模式会删除 OSS 对象。
 
 ## iOS 打包
 
@@ -350,7 +354,7 @@ npm run smoke:ui
 
 `npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。
 
-`npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存和删除闭环。
+`npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存/删除闭环，以及 `STORAGE_PROVIDER=oss` 的签名上传/删除请求生成。
 
 `npm run check:permissions` 会扫描 Capacitor Android manifest 和已生成的 iOS Info.plist，确保 MVP 没有默认申请定位、相机、麦克风、通讯录、日历、短信、通知、跟踪等敏感权限。当前 Android 只允许 `android.permission.INTERNET`。
 
@@ -368,7 +372,7 @@ npm run smoke:ui
 
 - 配置真实 LLM API Key 后验证真实 JSON 生成。
 - 配置通义万相 API Key 后验证真实生图。
-- 接入阿里云 OSS 或更合适的国内对象存储。
+- 配置真实 OSS 账号后验证上传、公开 URL 访问和删除闭环；如后续成本/地域需要，再补 S3-compatible 国内对象存储。
 - 安装完整 Xcode + CocoaPods 后生成 iOS 工程。
 - Android AAB/APK 打包。
 - 正式登录：手机号短信 + 微信移动 App 登录。

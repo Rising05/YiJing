@@ -2,7 +2,7 @@ import { BadGatewayException, Injectable, InternalServerErrorException } from '@
 import { ConfigService } from '@nestjs/config'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, resolve } from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { createHmac, randomUUID } from 'node:crypto'
 
 export interface DeleteStoredImageResult {
   status: 'skipped' | 'deleted' | 'unsupported'
@@ -28,8 +28,10 @@ export class StorageService {
       return this.saveRemoteImageToLocalDisk(imageUrl)
     }
 
-    // OSS upload is intentionally isolated behind this service. The next step can
-    // add ali-oss here without changing generation/image service contracts.
+    if (this.provider === 'oss') {
+      return this.saveRemoteImageToOss(imageUrl)
+    }
+
     return imageUrl
   }
 
@@ -46,9 +48,10 @@ export class StorageService {
       return this.deleteLocalImage(imageUrl)
     }
 
-    // Real object-store deletion stays behind this service so API callers do not
-    // depend on a specific vendor SDK. Until OSS is configured, do not pretend the
-    // remote object was deleted.
+    if (this.provider === 'oss') {
+      return this.deleteOssImage(imageUrl)
+    }
+
     return { status: 'unsupported', reason: `delete_not_configured:${this.provider}` }
   }
 
@@ -61,20 +64,7 @@ export class StorageService {
   }
 
   private async saveRemoteImageToLocalDisk(imageUrl: string) {
-    const response = await fetch(imageUrl)
-    if (!response.ok) {
-      throw new BadGatewayException({ code: 'IMAGE_STORAGE_FAILED', message: `图片下载失败：${response.status}` })
-    }
-
-    const contentType = response.headers.get('content-type')?.split(';')[0]?.toLowerCase() ?? ''
-    if (!contentType.startsWith('image/')) {
-      throw new BadGatewayException({ code: 'IMAGE_STORAGE_FAILED', message: '远程地址不是图片资源' })
-    }
-
-    const bytes = Buffer.from(await response.arrayBuffer())
-    if (!bytes.length) {
-      throw new BadGatewayException({ code: 'IMAGE_STORAGE_FAILED', message: '远程图片为空' })
-    }
+    const { bytes, contentType } = await this.downloadRemoteImage(imageUrl)
 
     await mkdir(this.localStorageDir, { recursive: true })
     const fileName = `${randomUUID()}${this.extensionFor(contentType, imageUrl)}`
@@ -86,6 +76,26 @@ export class StorageService {
     }
 
     return `${this.publicBaseUrl}/api/images/${fileName}`
+  }
+
+  private async saveRemoteImageToOss(imageUrl: string) {
+    const { bytes, contentType } = await this.downloadRemoteImage(imageUrl)
+    const objectKey = this.createObjectKey(this.extensionFor(contentType, imageUrl))
+    const response = await fetch(this.ossObjectUrl(objectKey), {
+      method: 'PUT',
+      headers: this.ossHeaders('PUT', objectKey, contentType),
+      body: bytes,
+    })
+
+    if (!response.ok) {
+      const message = await response.text().catch(() => '')
+      throw new BadGatewayException({
+        code: 'IMAGE_STORAGE_FAILED',
+        message: message ? `OSS 图片上传失败：${response.status}` : `OSS 图片上传失败：${response.status}`,
+      })
+    }
+
+    return this.ossPublicUrl(objectKey)
   }
 
   private async deleteLocalImage(imageUrl: string): Promise<DeleteStoredImageResult> {
@@ -101,6 +111,43 @@ export class StorageService {
 
     await rm(filePath, { force: true })
     return { status: 'deleted' }
+  }
+
+  private async deleteOssImage(imageUrl: string): Promise<DeleteStoredImageResult> {
+    const objectKey = this.objectKeyFromOssImageUrl(imageUrl)
+    if (!objectKey) {
+      return { status: 'skipped', reason: 'not_oss_image_url' }
+    }
+
+    const response = await fetch(this.ossObjectUrl(objectKey), {
+      method: 'DELETE',
+      headers: this.ossHeaders('DELETE', objectKey),
+    })
+
+    if (response.ok || response.status === 404) {
+      return { status: 'deleted' }
+    }
+
+    return { status: 'unsupported', reason: `oss_delete_failed:${response.status}` }
+  }
+
+  private async downloadRemoteImage(imageUrl: string) {
+    const response = await fetch(imageUrl)
+    if (!response.ok) {
+      throw new BadGatewayException({ code: 'IMAGE_STORAGE_FAILED', message: `图片下载失败：${response.status}` })
+    }
+
+    const contentType = response.headers.get('content-type')?.split(';')[0]?.toLowerCase() ?? ''
+    if (!contentType.startsWith('image/')) {
+      throw new BadGatewayException({ code: 'IMAGE_STORAGE_FAILED', message: '远程地址不是图片资源' })
+    }
+
+    const bytes = Buffer.from(await response.arrayBuffer())
+    if (!bytes.length) {
+      throw new BadGatewayException({ code: 'IMAGE_STORAGE_FAILED', message: '远程图片为空' })
+    }
+
+    return { bytes, contentType }
   }
 
   private fileNameFromLocalImageUrl(imageUrl: string) {
@@ -120,6 +167,56 @@ export class StorageService {
     return '.png'
   }
 
+  private createObjectKey(extension: string) {
+    const normalizedPrefix = this.ossObjectPrefix
+      .split('/')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .join('/')
+    const fileName = `${randomUUID()}${extension}`
+    return normalizedPrefix ? `${normalizedPrefix}/${fileName}` : fileName
+  }
+
+  private ossHeaders(method: 'PUT' | 'DELETE', objectKey: string, contentType = '') {
+    const date = new Date().toUTCString()
+    const canonicalResource = `/${this.ossBucket}/${objectKey}`
+    const stringToSign = `${method}\n\n${contentType}\n${date}\n${canonicalResource}`
+    const signature = createHmac('sha1', this.ossAccessKeySecret).update(stringToSign).digest('base64')
+    const headers: Record<string, string> = {
+      Authorization: `OSS ${this.ossAccessKeyId}:${signature}`,
+      Date: date,
+    }
+    if (contentType) headers['Content-Type'] = contentType
+    return headers
+  }
+
+  private ossObjectUrl(objectKey: string) {
+    return `${this.ossEndpoint}/${encodePath(objectKey)}`
+  }
+
+  private ossPublicUrl(objectKey: string) {
+    return `${this.ossPublicBaseUrl}/${encodePath(objectKey)}`
+  }
+
+  private objectKeyFromOssImageUrl(imageUrl: string) {
+    try {
+      const url = new URL(imageUrl)
+      const candidates = [this.ossPublicBaseUrl, this.ossEndpoint]
+      for (const candidate of candidates) {
+        const base = new URL(candidate)
+        if (url.origin !== base.origin) continue
+        const basePath = trimSlashes(base.pathname)
+        const path = trimSlashes(url.pathname)
+        if (basePath && !path.startsWith(`${basePath}/`)) continue
+        const objectKey = basePath ? path.slice(basePath.length + 1) : path
+        return decodeURIComponent(objectKey)
+      }
+    } catch {
+      return ''
+    }
+    return ''
+  }
+
   private get provider() {
     return (this.config.get<string>('STORAGE_PROVIDER') ?? 'none').toLowerCase()
   }
@@ -133,4 +230,52 @@ export class StorageService {
     if (configured) return configured
     return `http://localhost:${this.config.get<string>('PORT') ?? 3000}`
   }
+
+  private get ossBucket() {
+    return requireConfig(this.config, 'OSS_BUCKET')
+  }
+
+  private get ossRegion() {
+    return requireConfig(this.config, 'OSS_REGION')
+  }
+
+  private get ossAccessKeyId() {
+    return requireConfig(this.config, 'OSS_ACCESS_KEY_ID')
+  }
+
+  private get ossAccessKeySecret() {
+    return requireConfig(this.config, 'OSS_ACCESS_KEY_SECRET')
+  }
+
+  private get ossEndpoint() {
+    const configured = this.config.get<string>('OSS_ENDPOINT')?.replace(/\/$/, '')
+    if (configured) return configured
+    return `https://${this.ossBucket}.${this.ossRegion}.aliyuncs.com`
+  }
+
+  private get ossPublicBaseUrl() {
+    const configured = this.config.get<string>('OSS_PUBLIC_BASE_URL')?.replace(/\/$/, '')
+    if (configured) return configured
+    return this.ossEndpoint
+  }
+
+  private get ossObjectPrefix() {
+    return this.config.get<string>('OSS_OBJECT_PREFIX') ?? 'generated-images'
+  }
+}
+
+function requireConfig(config: ConfigService, name: string) {
+  const value = config.get<string>(name)
+  if (!value) {
+    throw new InternalServerErrorException({ code: 'IMAGE_STORAGE_FAILED', message: `缺少存储配置：${name}` })
+  }
+  return value
+}
+
+function encodePath(path: string) {
+  return path.split('/').map(encodeURIComponent).join('/')
+}
+
+function trimSlashes(path: string) {
+  return path.replace(/^\/+|\/+$/g, '')
 }

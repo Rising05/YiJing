@@ -107,7 +107,11 @@ function checkStorage() {
     requireValue('OSS_REGION', 'STORAGE_PROVIDER=oss requires OSS_REGION')
     requireValue('OSS_ACCESS_KEY_ID', 'STORAGE_PROVIDER=oss requires OSS_ACCESS_KEY_ID')
     requireValue('OSS_ACCESS_KEY_SECRET', 'STORAGE_PROVIDER=oss requires OSS_ACCESS_KEY_SECRET')
-    warn('STORAGE_PROVIDER=oss is configured, but StorageService upload/delete implementation is still a placeholder')
+    optionalUrl('OSS_ENDPOINT', 'OSS_ENDPOINT must be a valid URL when provided')
+    optionalUrl('OSS_PUBLIC_BASE_URL', 'OSS_PUBLIC_BASE_URL must be a valid URL when provided')
+    if (env.OSS_OBJECT_PREFIX && env.OSS_OBJECT_PREFIX.includes('..')) {
+      error('OSS_OBJECT_PREFIX must not contain path traversal segments')
+    }
   }
 }
 
@@ -167,6 +171,11 @@ function requireUrl(name, message) {
   } catch {
     error(message)
   }
+}
+
+function optionalUrl(name, message) {
+  if (!env[name]) return
+  requireUrl(name, message)
 }
 
 function info(message) {
