@@ -76,6 +76,20 @@ async function main() {
   }, 'INVALID_INPUT')
   console.log('invalid login rejected: ok')
 
+  await expectRequestFailure('/auth/sms-code', {
+    method: 'POST',
+    body: JSON.stringify({ phone: '13800000000' }),
+  }, 'FEATURE_NOT_CONFIGURED')
+  await expectRequestFailure('/auth/sms-login', {
+    method: 'POST',
+    body: JSON.stringify({ phone: '13800000000', code: '123456' }),
+  }, 'FEATURE_NOT_CONFIGURED')
+  await expectRequestFailure('/auth/wechat-login', {
+    method: 'POST',
+    body: JSON.stringify({ code: 'mock-wechat-code' }),
+  }, 'FEATURE_NOT_CONFIGURED')
+  console.log('formal auth placeholders rejected: ok')
+
   let login = await request('/auth/test-login', {
     method: 'POST',
     body: JSON.stringify({ phone: '13800000000', code: '123456' }),

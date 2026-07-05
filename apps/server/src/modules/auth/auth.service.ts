@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import type { User, UserQuota } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
+import { SendSmsCodeDto, SmsLoginDto } from './dto/sms-auth.dto'
 import { TestLoginDto } from './dto/test-login.dto'
+import { WechatLoginDto } from './dto/wechat-login.dto'
+
+type UserWithQuota = User & { quota: UserQuota | null }
 
 @Injectable()
 export class AuthService {
@@ -46,6 +51,22 @@ export class AuthService {
       include: { quota: true },
     })
 
+    return this.issueToken(user)
+  }
+
+  async sendSmsCode(_dto: SendSmsCodeDto) {
+    this.throwAuthProviderNotConfigured('短信验证码服务尚未配置，MVP 阶段请使用测试登录。')
+  }
+
+  async smsLogin(_dto: SmsLoginDto) {
+    this.throwAuthProviderNotConfigured('短信登录服务尚未配置，MVP 阶段请使用测试登录。')
+  }
+
+  async wechatLogin(_dto: WechatLoginDto) {
+    this.throwAuthProviderNotConfigured('微信登录尚未配置，MVP 阶段请使用测试登录。')
+  }
+
+  private async issueToken(user: UserWithQuota) {
     const token = await this.jwtService.signAsync({ sub: user.id, phone: user.phone })
     return {
       token,
@@ -56,5 +77,9 @@ export class AuthService {
         remainingCredits: user.quota?.remainingCredits ?? 0,
       },
     }
+  }
+
+  private throwAuthProviderNotConfigured(message: string): never {
+    throw new ServiceUnavailableException({ code: 'FEATURE_NOT_CONFIGURED', message })
   }
 }
