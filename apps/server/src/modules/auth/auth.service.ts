@@ -26,7 +26,10 @@ export class AuthService {
               remainingCredits: 20,
               usedCredits: 0,
             },
-            update: {},
+            update: {
+              remainingCredits: 20,
+              usedCredits: 0,
+            },
           },
         },
       },

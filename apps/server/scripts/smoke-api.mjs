@@ -65,13 +65,24 @@ async function main() {
   }, 'INVALID_INPUT')
   console.log('invalid login rejected: ok')
 
-  const login = await request('/auth/test-login', {
+  let login = await request('/auth/test-login', {
     method: 'POST',
     body: JSON.stringify({ phone: '13800000000', code: '123456' }),
   })
-  const token = login.token
+  let token = login.token
   if (!token) throw new Error('login did not return token')
   console.log('login: ok')
+
+  await setQuota(login.user.id, { remainingCredits: 0, usedCredits: 20 })
+  login = await request('/auth/test-login', {
+    method: 'POST',
+    body: JSON.stringify({ phone: '13800000000', code: '123456' }),
+  })
+  token = login.token
+  if (!token || login.user.remainingCredits !== 20) {
+    throw new Error('test login did not restore 20 remaining credits')
+  }
+  console.log('login quota restore: ok')
 
   await expectRequestFailure('/generation/text-memory', {
     method: 'POST',
@@ -177,7 +188,7 @@ async function main() {
   })
   console.log('delete history: ok')
 
-  await setRemainingCredits(login.user.id, 0)
+  await setQuota(login.user.id, { remainingCredits: 0 })
   await expectRequestFailure('/generation/text-memory', {
     method: 'POST',
     headers: auth(token),
@@ -199,14 +210,14 @@ async function main() {
   console.log('deleted token rejected: ok')
 }
 
-async function setRemainingCredits(userId, remainingCredits) {
+async function setQuota(userId, data) {
   loadServerEnv()
   const { PrismaClient } = await import('@prisma/client')
   const prisma = new PrismaClient()
   try {
     await prisma.userQuota.update({
       where: { userId },
-      data: { remainingCredits },
+      data,
     })
   } finally {
     await prisma.$disconnect()
