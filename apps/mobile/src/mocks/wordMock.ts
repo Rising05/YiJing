@@ -5,12 +5,12 @@ import { anchorPosition } from '../utils/anchor'
 const partOfSpeech = ['n.', 'v.', 'adj.', 'phr.']
 
 export function createMockWordResult(request: WordCardRequest): WordCardResult {
-  const templateId = request.words.length > 15 ? 'blank_word_card_30' : 'airport_15'
+  const templateId = request.cardMode === 'simple' || request.words.length > 15 ? 'blank_word_card_30' : 'airport_15'
   const template = getTemplate(templateId)
   const now = new Date()
   return {
     id: `word-${now.getTime()}`,
-    title: '单词记忆卡片',
+    title: request.cardMode === 'simple' ? '单词信息卡片' : '单词记忆卡片',
     type: 'word-card',
     templateId,
     backgroundImageUrl: '',

@@ -9,12 +9,15 @@ import { ApiError, createWordCard } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useGenerationStore } from '../stores/generationStore'
 import { useHistoryStore } from '../stores/historyStore'
+import type { WordCardRequest } from '../types'
 import { getUserFacingErrorMessage, shouldOpenAuthForError } from '../utils/apiError'
 import { parseWords } from '../utils/wordParser'
 import PageShell from './PageShell'
 
 export default function WordCardPage() {
   const [input, setInput] = useState('counter\nluggage\npassport\nboarding gate\nsecurity officer')
+  const [cardMode, setCardMode] = useState<WordCardRequest['cardMode']>('scene')
+  const [advanced, setAdvanced] = useState(false)
   const [error, setError] = useState('')
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token)
@@ -35,7 +38,7 @@ export default function WordCardPage() {
     setError('')
     setGenerating(true)
     window.setTimeout(async () => {
-      const request = { words, theme: 'auto' as const, cardMode: 'scene' as const }
+      const request = { words, theme: 'auto' as const, cardMode }
       try {
         const result = token && token !== 'local-mock-token'
           ? await createWordCard(token, request).catch((error) => {
@@ -71,6 +74,31 @@ export default function WordCardPage() {
             <label className="form-label">单词或短语</label>
             <textarea className="form-input min-h-52 resize-none" value={input} onChange={(event) => setInput(event.target.value)} />
             <div className="mt-2 text-right text-xs text-ink/52">已识别 {words.length}/30 个</div>
+            <button
+              className="mt-3 text-sm font-semibold text-ink/62"
+              onClick={() => setAdvanced((value) => !value)}
+              data-testid="word-card-advanced-toggle"
+            >
+              {advanced ? '收起高级选项' : '展开高级选项'}
+            </button>
+            {advanced ? (
+              <div className="mt-3">
+                <label className="form-label">卡片模式</label>
+                <select
+                  className="form-input"
+                  value={cardMode}
+                  onChange={(event) => setCardMode(event.target.value as WordCardRequest['cardMode'])}
+                  data-testid="word-card-mode"
+                >
+                  <option value="scene">场景记忆图</option>
+                  <option value="association">联想记忆图</option>
+                  <option value="simple">简洁信息卡</option>
+                </select>
+                <p className="mt-2 text-xs leading-5 text-ink/52">
+                  简洁信息卡会优先使用空白词卡模板，适合大量单词和短语。
+                </p>
+              </div>
+            ) : null}
             {error ? <p className="mt-3 text-sm text-coral" data-testid="word-card-error">{error}</p> : null}
             <GlassButton className="mt-4 w-full" loading={isGenerating} onClick={() => (user ? generate() : openAuth(generate))} data-testid="word-card-generate">
               生成单词卡片

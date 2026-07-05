@@ -59,13 +59,13 @@ export function createTextMemoryMock(inputText: string, contentType: string, sce
   }
 }
 
-export function createWordCardMock(words: string[]) {
+export function createWordCardMock(words: string[], cardMode: 'scene' | 'association' | 'simple' = 'scene') {
   const now = new Date()
-  const templateId = words.length > 15 ? 'blank_word_card_30' : 'airport_15'
+  const templateId = cardMode === 'simple' || words.length > 15 ? 'blank_word_card_30' : 'airport_15'
   const normalized = words.map((word) => word.trim()).filter(Boolean)
   return {
     id: '',
-    title: '单词记忆卡片',
+    title: cardMode === 'simple' ? '单词信息卡片' : '单词记忆卡片',
     type: 'word-card',
     templateId,
     backgroundImageUrl: '',
@@ -86,7 +86,10 @@ export function createWordCardMock(words: string[]) {
         position: { x: anchor.x, y: anchor.y },
       }
     }),
-    imagePrompt: 'clean vocabulary memory card background, no text, no numbers, no labels, no watermark, no UI elements',
+    imagePrompt:
+      cardMode === 'simple'
+        ? 'clean blank vocabulary information card background, soft grid layout, generous whitespace, no text, no numbers, no labels, no watermark, no UI elements'
+        : 'clean vocabulary memory card background, no text, no numbers, no labels, no watermark, no UI elements',
     watermarkText: waterMarkText,
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),

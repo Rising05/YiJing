@@ -72,7 +72,7 @@ export class AiService {
   async createWordCardResult(dto: WordCardDto) {
     if (this.shouldUseMock()) {
       return {
-        result: createWordCardMock(dto.words),
+        result: createWordCardMock(dto.words, dto.cardMode),
         promptUsed: 'mock-word-card-v1',
         provider: 'mock',
         model: 'mock',

@@ -83,6 +83,13 @@ try {
   await page.waitFor(() => document.body.innerText.includes('今天要记什么？'))
   await page.click('[data-testid="home-word-card-link"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="word-card-page"]')))
+  await page.click('[data-testid="word-card-advanced-toggle"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="word-card-mode"]')))
+  await page.evaluate(`(() => {
+    const select = document.querySelector('[data-testid="word-card-mode"]');
+    select.value = 'simple';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`)
   await page.evaluate(`(() => {
     const input = document.querySelector('textarea');
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
