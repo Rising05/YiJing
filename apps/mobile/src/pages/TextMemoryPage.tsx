@@ -43,11 +43,11 @@ export default function TextMemoryPage() {
         const result = token && token !== 'local-mock-token'
           ? await createTextMemory(token, request).catch((error) => {
               if (error instanceof ApiError) throw error
-              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
               return createMockMemoryResult(request)
             })
           : (() => {
-              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+              if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
               return createMockMemoryResult(request)
             })()
         if (result.credits) setRemainingCredits(result.credits.remaining)

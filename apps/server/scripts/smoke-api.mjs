@@ -1,4 +1,9 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000/api'
+const serverDir = dirname(dirname(fileURLToPath(import.meta.url)))
 
 async function request(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -166,6 +171,18 @@ async function main() {
   })
   console.log('delete history: ok')
 
+  await setRemainingCredits(login.user.id, 0)
+  await expectRequestFailure('/generation/text-memory', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      inputText: '额度用完后不能继续生成',
+      contentType: 'modern_text',
+      scenePreference: 'auto',
+    }),
+  }, 'QUOTA_EXCEEDED')
+  console.log('quota exhaustion rejected: ok')
+
   await request('/user/me', {
     method: 'DELETE',
     headers: auth(token),
@@ -174,6 +191,35 @@ async function main() {
 
   await expectRequestFailure('/history', { headers: auth(token) }, 'UNAUTHORIZED')
   console.log('deleted token rejected: ok')
+}
+
+async function setRemainingCredits(userId, remainingCredits) {
+  loadServerEnv()
+  const { PrismaClient } = await import('@prisma/client')
+  const prisma = new PrismaClient()
+  try {
+    await prisma.userQuota.update({
+      where: { userId },
+      data: { remainingCredits },
+    })
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+function loadServerEnv() {
+  if (process.env.DATABASE_URL) return
+  const envPath = join(serverDir, '.env')
+  if (!existsSync(envPath)) return
+  for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const separatorIndex = trimmed.indexOf('=')
+    if (separatorIndex === -1) continue
+    const key = trimmed.slice(0, separatorIndex).trim()
+    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, '')
+    process.env[key] ??= value
+  }
 }
 
 main().catch((error) => {

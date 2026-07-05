@@ -71,11 +71,11 @@ export default function GenerateResultPage() {
       const nextResult = token && token !== 'local-mock-token'
         ? await regenerateGeneration(token, result.id).catch((error) => {
             if (error instanceof ApiError) throw error
-            if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+            if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
             return createLocalRegeneration(result)
           })
         : (() => {
-            if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'INSUFFICIENT_CREDITS')
+            if (!consumeCredit()) throw new ApiError('生成次数不足，请稍后补充次数。', 'QUOTA_EXCEEDED')
             return createLocalRegeneration(result)
           })()
       if (nextResult.credits) setRemainingCredits(nextResult.credits.remaining)

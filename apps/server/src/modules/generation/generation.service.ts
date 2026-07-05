@@ -120,7 +120,7 @@ export class GenerationService {
       },
     })
     if (quota.remainingCredits <= 0) {
-      throw new BadRequestException({ code: 'INSUFFICIENT_CREDITS', message: '生成次数不足，请稍后补充次数。' })
+      throw new BadRequestException({ code: 'QUOTA_EXCEEDED', message: '生成次数不足，请稍后补充次数。' })
     }
     return quota
   }
@@ -167,7 +167,7 @@ export class GenerationService {
         },
       })
       if (quotaUpdate.count !== 1) {
-        throw new BadRequestException({ code: 'INSUFFICIENT_CREDITS', message: '生成次数不足，请稍后补充次数。' })
+        throw new BadRequestException({ code: 'QUOTA_EXCEEDED', message: '生成次数不足，请稍后补充次数。' })
       }
 
       const record = await tx.generationRecord.create({
