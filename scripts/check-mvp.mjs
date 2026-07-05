@@ -23,6 +23,7 @@ const steps = [
   ['check:frontend-secrets', ['run', 'check:frontend-secrets']],
   ['check:mobile-layout', ['run', 'check:mobile-layout']],
   ['check:mobile-runtime-config', ['run', 'check:mobile-runtime-config']],
+  ['check:compliance-copy', ['run', 'check:compliance-copy']],
   ['check:permissions', ['run', 'check:permissions']],
   ['check:tracking-sdk', ['run', 'check:tracking-sdk']],
   ['check:release-metadata', ['run', 'check:release-metadata']],

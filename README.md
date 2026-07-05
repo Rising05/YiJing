@@ -115,6 +115,7 @@ npm run build:mobile
 - 清除缓存和删除账号都会先显示二次确认；`npm run smoke:ui` 已覆盖清缓存后历史为空、删除账号后退出登录。
 - 删除单条历史记录前会在对应卡片内显示确认操作。
 - 隐私政策和用户协议已补齐 MVP 草稿，覆盖数据收集、保存删除、权限、第三方服务、AI 辅助边界、未成年人提示和中国大陆内容合规要求；正式发布前仍需法律审核。
+- `npm run check:compliance-copy` 会扫描隐私政策、用户协议、AI 免责声明、设置页入口和合规页面路由，防止 MVP 关键合规文案被误删。
 - `npm run check:tracking-sdk` 会扫描移动端依赖、lockfile 和原生配置，防止广告、归因、统计追踪、ATT、SKAdNetwork 等无关 SDK 进入 MVP。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
