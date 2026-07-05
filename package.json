@@ -14,6 +14,7 @@
     "build:mobile": "npm run build -w apps/mobile",
     "build:server": "npm run build -w apps/server",
     "check:ai-templates": "npm run check:ai-templates -w apps/server",
+    "check:mvp": "node scripts/check-mvp.mjs",
     "check:content-safety": "npm run check:content-safety -w apps/server",
     "check:config": "npm run check:config -w apps/server",
     "check:frontend-secrets": "npm run check:frontend-secrets -w apps/mobile",
