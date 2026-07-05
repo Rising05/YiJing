@@ -111,7 +111,7 @@ npm run build:mobile
 - `npm run check:tracking-sdk` 会扫描移动端依赖、lockfile 和原生配置，防止广告、归因、统计追踪、ATT、SKAdNetwork 等无关 SDK 进入 MVP。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
-- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断和无水平溢出已纳入 390px/569px UI smoke。
+- `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断、库 wrapper 不偏移和无水平溢出已纳入 390px/569px UI smoke。
 - 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
 

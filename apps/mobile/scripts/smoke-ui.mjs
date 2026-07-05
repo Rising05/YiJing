@@ -227,16 +227,23 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
         name,
         missing: !element,
         left: rect?.left ?? 0,
+        top: rect?.top ?? 0,
         right: rect?.right ?? 0,
+        bottom: rect?.bottom ?? 0,
         width: rect?.width ?? 0,
+        height: rect?.height ?? 0,
         borderRadius: style?.borderRadius ?? '',
         overflow: style?.overflow ?? '',
+        clipPath: style?.clipPath ?? '',
+        position: style?.position ?? '',
+        transform: style?.transform ?? '',
       };
     };
     return {
       expectedViewportWidth: ${expectedViewportWidth},
       viewportWidth: window.innerWidth,
       documentWidth: document.documentElement.scrollWidth,
+      main: read('main', document.querySelector('main')),
       link: read('link', link),
       shell: read('shell', link?.querySelector('.glass-shell')),
       liquid: read('liquid', link?.querySelector('.glass-liquid')),
@@ -250,6 +257,10 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
   const layers = ['link', 'shell', 'liquid', 'svg', 'glass', 'wrapper', 'fallback']
   assert(homeCardMetrics.viewportWidth === expectedViewportWidth, `Homepage viewport should be ${expectedViewportWidth}px`)
   assert(homeCardMetrics.documentWidth <= homeCardMetrics.viewportWidth, 'Homepage should not have horizontal overflow')
+  assert(homeCardMetrics.main.left >= -0.5, 'Homepage main should stay inside viewport on the left')
+  assert(homeCardMetrics.main.right <= homeCardMetrics.viewportWidth + 0.5, 'Homepage main should stay inside viewport on the right')
+  assert(homeCardMetrics.link.left > 0, 'Homepage glass card should not touch or disappear behind the left viewport edge')
+  assert(homeCardMetrics.link.right < homeCardMetrics.viewportWidth, 'Homepage glass card should not touch or disappear behind the right viewport edge')
   for (const layer of layers) {
     const metrics = homeCardMetrics[layer]
     assert(!metrics.missing && metrics.width > 0, `Homepage glass card layer is missing: ${layer}`)
@@ -257,7 +268,12 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
     assert(metrics.right <= homeCardMetrics.viewportWidth + 0.5, `Homepage glass card ${layer} should not be clipped on the right`)
     assert(metrics.overflow === 'hidden', `Homepage glass card ${layer} should clip square liquid layers`)
     assert(metrics.borderRadius === '24px', `Homepage glass card ${layer} should preserve rounded corners`)
+    assert(metrics.clipPath.includes('round 24px'), `Homepage glass card ${layer} should use a rounded clip-path`)
   }
+  assert(homeCardMetrics.wrapper.position === 'relative', 'Homepage glass card wrapper should not inherit absolute library positioning')
+  assert(homeCardMetrics.wrapper.transform === 'none', 'Homepage glass card wrapper should not inherit library transforms')
+  assert(homeCardMetrics.wrapper.left === homeCardMetrics.fallback.left, 'Homepage glass card wrapper and fallback should align on the left')
+  assert(homeCardMetrics.wrapper.top === homeCardMetrics.fallback.top, 'Homepage glass card wrapper and fallback should align on the top')
   assert(homeCardMetrics.content.left >= homeCardMetrics.fallback.left - 0.5, 'Homepage glass card content should stay inside fallback on the left')
   assert(homeCardMetrics.content.right <= homeCardMetrics.fallback.right + 0.5, 'Homepage glass card content should stay inside fallback on the right')
 }
