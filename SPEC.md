@@ -156,6 +156,7 @@
 | 历史与账号操作错误反馈 | Agent-Frontend | Done | 历史页和详情页的读取/收藏/删除操作改为展示用户可见错误；删除历史和删除账号在真实后端失败时不再静默清除本地状态或退出账号，避免用户误以为远端删除成功；设置页删除账号复用统一错误文案 | `apps/mobile/src/pages/HistoryPage.tsx`, `apps/mobile/src/pages/DetailPage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `README.md`, `SPEC.md` | `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 前端本地历史过期清理 | Agent-Frontend/Privacy | Done | `historyStore` 按 `expiresAt` 自动过滤 localStorage 中已过期的生成记录；持久化恢复、添加记录、收藏更新和单条读取都会清理过期项，无效日期保守保留，补齐前端本地缓存与 30 天保存策略的一致性 | `apps/mobile/src/stores/historyStore.ts`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 后端历史过期过滤 | Agent-Backend/Privacy | Done | 后端历史列表、详情、收藏、删除和重新生成统一只处理 `expiresAt > now` 且未删除的记录；过期记录对用户表现为不存在，避免 30 天保存策略被历史接口或重新生成接口绕过 | `apps/server/src/modules/history/history.service.ts`, `apps/server/src/modules/generation/generation.service.ts`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
+| 导出与分享失败反馈 | Agent-Frontend | Done | 导出 PNG 和分享/保存按钮新增 `onError` 回调，结果页将导出渲染、下载或 Web Share 失败映射为统一 `EXPORT_FAILED` 用户文案；开始新导出/分享时清除旧错误，避免导出失败静默无反馈 | `apps/mobile/src/components/ExportImageButton.tsx`, `apps/mobile/src/components/ShareImageButton.tsx`, `apps/mobile/src/pages/GenerateResultPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 
 追加记录模板：
 

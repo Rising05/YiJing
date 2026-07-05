@@ -7,9 +7,11 @@ import GlassButton from './GlassButton'
 interface Props {
   targetRef: RefObject<HTMLDivElement | null>
   ratio: ExportRatio
+  onError?: (error: unknown) => void
+  onStart?: () => void
 }
 
-export default function ExportImageButton({ targetRef, ratio }: Props) {
+export default function ExportImageButton({ targetRef, ratio, onError, onStart }: Props) {
   const [loading, setLoading] = useState(false)
   return (
     <GlassButton
@@ -17,9 +19,12 @@ export default function ExportImageButton({ targetRef, ratio }: Props) {
       loading={loading}
       onClick={async () => {
         if (!targetRef.current) return
+        onStart?.()
         setLoading(true)
         try {
           await exportNodeToPng(targetRef.current, ratio)
+        } catch (error) {
+          onError?.(error)
         } finally {
           setLoading(false)
         }

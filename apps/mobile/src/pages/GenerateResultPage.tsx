@@ -36,6 +36,13 @@ export default function GenerateResultPage() {
   const [regenerating, setRegenerating] = useState(false)
   const [error, setError] = useState('')
 
+  function handleExportError(error: unknown) {
+    setError(getUserFacingErrorMessage(
+      error instanceof ApiError ? error : new ApiError('导出失败，请重试', 'EXPORT_FAILED'),
+      '导出失败，请重试',
+    ))
+  }
+
   function createLocalRegeneration(source: GenerationResult) {
     if (source.type === 'text-memory') {
       return createMockMemoryResult({
@@ -120,8 +127,8 @@ export default function GenerateResultPage() {
         </button>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
-        <ExportImageButton targetRef={exportRef} ratio={ratio} />
-        <ShareImageButton targetRef={exportRef} ratio={ratio} />
+        <ExportImageButton targetRef={exportRef} ratio={ratio} onStart={() => setError('')} onError={handleExportError} />
+        <ShareImageButton targetRef={exportRef} ratio={ratio} onStart={() => setError('')} onError={handleExportError} />
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Link to={`/detail/${result.id}`}>
