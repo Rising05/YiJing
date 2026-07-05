@@ -30,6 +30,7 @@ export default function LiquidGlassCard({
         cornerRadius={24}
         className="glass-liquid h-full w-full"
         padding="0"
+        style={{ position: 'relative', top: '0px', left: '0px', width: '100%', height: '100%' }}
         overLight
       >
         <div className="glass-fallback h-full w-full">{children}</div>

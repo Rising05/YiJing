@@ -291,6 +291,9 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
         clipPath: style?.clipPath ?? '',
         position: style?.position ?? '',
         transform: style?.transform ?? '',
+        display: style?.display ?? '',
+        padding: style?.padding ?? '',
+        gap: style?.gap ?? '',
       };
     };
     return {
@@ -326,6 +329,12 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
   }
   assert(homeCardMetrics.wrapper.position === 'relative', 'Homepage glass card wrapper should not inherit absolute library positioning')
   assert(homeCardMetrics.wrapper.transform === 'none', 'Homepage glass card wrapper should not inherit library transforms')
+  assert(homeCardMetrics.liquid.left === homeCardMetrics.shell.left, 'Homepage liquid layer should align with shell on the left')
+  assert(homeCardMetrics.liquid.top === homeCardMetrics.shell.top, 'Homepage liquid layer should align with shell on the top')
+  assert(homeCardMetrics.glass.display === 'block', 'Homepage liquid glass inner layer should not use inline-flex sizing')
+  assert(homeCardMetrics.glass.padding === '0px', 'Homepage liquid glass inner layer should not add library padding')
+  assert(homeCardMetrics.glass.gap === '0px', 'Homepage liquid glass inner layer should not add library gap')
+  assert(homeCardMetrics.wrapper.display === 'block', 'Homepage glass card wrapper should use block layout')
   assert(homeCardMetrics.wrapper.left === homeCardMetrics.fallback.left, 'Homepage glass card wrapper and fallback should align on the left')
   assert(homeCardMetrics.wrapper.top === homeCardMetrics.fallback.top, 'Homepage glass card wrapper and fallback should align on the top')
   assert(homeCardMetrics.content.left >= homeCardMetrics.fallback.left - 0.5, 'Homepage glass card content should stay inside fallback on the left')
