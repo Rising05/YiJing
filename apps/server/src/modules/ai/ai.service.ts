@@ -40,7 +40,7 @@ export class AiService {
       scenePreference: dto.scenePreference,
       templates: aiTemplates,
     })
-    const plan = validateTextMemoryPlan(await this.callJsonWithRetry<TextMemoryPlan>(prompt))
+    const plan = await this.callJsonWithRetry<TextMemoryPlan>(prompt, validateTextMemoryPlan)
     const template = getAiTemplate(plan.templateId)
     const imagePrompt = buildImagePrompt({
       templateScenePrompt: template.scenePrompt,
@@ -86,7 +86,7 @@ export class AiService {
       cardMode: dto.cardMode,
       templates: aiTemplates,
     })
-    const plan = validateWordCardPlan(await this.callJsonWithRetry<WordCardPlan>(prompt))
+    const plan = await this.callJsonWithRetry<WordCardPlan>(prompt, validateWordCardPlan)
     const template = getAiTemplate(plan.templateId)
     const imagePrompt = buildImagePrompt({
       templateScenePrompt: template.scenePrompt,
@@ -116,7 +116,7 @@ export class AiService {
     }
   }
 
-  private async callJsonWithRetry<T>(prompt: string): Promise<T> {
+  private async callJsonWithRetry<T>(prompt: string, validate: (parsed: T) => T): Promise<T> {
     const retryCount = Number(this.config.get<string>('LLM_JSON_RETRY_COUNT') ?? 1)
     let lastError: unknown
     for (let attempt = 0; attempt <= retryCount; attempt += 1) {
@@ -124,9 +124,9 @@ export class AiService {
         const content = await this.callChatCompletion(
           attempt === 0
             ? prompt
-            : `${prompt}\n\n上次输出不是合法 JSON 或字段不合法。请只重新输出严格 JSON 对象，不要 Markdown。`,
+            : `${prompt}\n\n上次输出不是合法 JSON，或字段、模板、anchorKey 不符合要求。请只重新输出严格 JSON 对象，不要 Markdown。`,
         )
-        return parseStrictJson<T>(content)
+        return validate(parseStrictJson<T>(content))
       } catch (error) {
         lastError = error
       }

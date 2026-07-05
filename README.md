@@ -204,7 +204,7 @@ LLM_JSON_RETRY_COUNT=1
 - API Key 只能放在 `apps/server/.env`。
 - 前端不得直接请求 LLM。
 - LLM 必须输出严格 JSON。
-- JSON 解析失败会按配置重试。
+- JSON 解析失败、字段缺失、模板容量或 `anchorKey` 校验失败会按配置重试。
 - 后端会校验 `anchorKey`、模板容量、字段完整性。
 
 ## 接入通义万相
@@ -354,6 +354,7 @@ npm run prisma:validate
 npm run dev:mobile
 npm run dev:server
 npm run check:ai-templates
+npm run check:ai-retry
 npm run check:content-safety
 npm run check:config
 npm run check:image-storage
@@ -368,7 +369,9 @@ npm run smoke:ui
 
 `npm run check:ai-templates` 需要先执行 `npm run build:server`，用于验证后端 AI prompt/校验层使用的是 `packages/shared` 中的 10 个 canonical templates，避免真实 LLM 模式下模板数量和 SPEC 分叉。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:ai-retry` 需要先执行 `npm run build:server`，用于模拟真实 LLM 模式下第一次返回合法 JSON 但非法 `anchorKey`、第二次返回有效结构，确保解析和 schema/anchor 校验处于同一个重试闭环。
+
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/内容安全/AI 模板/AI 重试/图片存储/生产脱敏检查、mobile build、前端密钥/权限/广告追踪 SDK 检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 

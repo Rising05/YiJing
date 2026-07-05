@@ -10,6 +10,7 @@ const steps = [
   ['check:config', ['run', 'check:config']],
   ['check:content-safety', ['run', 'check:content-safety']],
   ['check:ai-templates', ['run', 'check:ai-templates']],
+  ['check:ai-retry', ['run', 'check:ai-retry']],
   ['check:image-storage', ['run', 'check:image-storage']],
   ['check:production-redaction', ['run', 'check:production-redaction']],
   ['build:mobile', ['run', 'build:mobile']],
