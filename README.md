@@ -120,6 +120,7 @@ npm run build:mobile
 - `LiquidGlassCard` 继续封装 `liquid-glass-react`，但真实内容层已和库动效层解耦：库只负责绝对铺满的玻璃背景，我们自己的 `.glass-fallback` 负责圆角、边框、阴影和内容布局；首页入口卡片圆角裁切、左右不被截断、fallback 位于动效层之上和无水平溢出已纳入 390px/569px UI smoke。
 - 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
+- `npm run check:mobile-layout` 会检查移动端 safe area、44px 以上按钮触控高度、底部导航触控高度，以及 Liquid Glass 内容层/动效层布局约束。
 - 移动端发布构建必须配置 `VITE_API_BASE_URL`，开发环境未配置时才会 fallback 到 `http://localhost:3000/api`；生产缺失时 API client 会返回明确的 `API_BASE_URL_MISSING` 错误。
 
 ## 后端运行
@@ -374,6 +375,7 @@ npm run check:cors-config
 npm run check:error-codes
 npm run check:image-prompts
 npm run check:image-storage
+npm run check:mobile-layout
 npm run check:mobile-runtime-config
 npm run check:production-config
 npm run check:production-redaction
@@ -392,9 +394,11 @@ npm run smoke:ui
 
 `npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
 
+`npm run check:mobile-layout` 会检查 `GlassButton`、底部导航、页面壳、登录弹窗和 Liquid Glass 卡片的关键移动端布局约束，覆盖 SPEC 技术验收中的按钮触控高度和 safe area 基线。
+
 `npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏检查、mobile build、前端密钥/移动端运行配置/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏检查、mobile build、前端密钥/移动端布局/移动端运行配置/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
