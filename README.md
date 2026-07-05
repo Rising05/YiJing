@@ -99,6 +99,7 @@ npm run build:mobile
 - 历史详情页会展示文本记忆点详情，以及单词的中文释义、音标、例句、视觉物体和记忆提示。
 - 清除缓存和删除账号都会先显示二次确认，减少误触风险。
 - 删除单条历史记录前会在对应卡片内显示确认操作。
+- 隐私政策和用户协议已补齐 MVP 草稿，覆盖数据收集、保存删除、权限、第三方服务、AI 辅助边界、未成年人提示和中国大陆内容合规要求；正式发布前仍需法律审核。
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
 - `LiquidGlassCard` 继续封装 `liquid-glass-react`，并保留 CSS 降级层；首页入口卡片的圆角裁切、左右不被截断和无水平溢出已纳入 UI smoke。
