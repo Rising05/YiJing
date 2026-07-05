@@ -75,11 +75,12 @@ export default function DetailPage() {
 
   return (
     <PageShell>
+      <div data-testid="detail-page" className="sr-only">历史详情页面</div>
       <h1 className="text-2xl font-black">{record.title}</h1>
       <p className="mt-2 text-sm text-ink/60">{new Date(record.createdAt).toLocaleString()}</p>
       {error ? <p className="mt-3 text-sm text-coral" data-testid="detail-error">{error}</p> : null}
       <div className="mt-5 grid gap-3">
-        <GlassButton variant="secondary" onClick={() => void handleFavorite()}>
+        <GlassButton variant="secondary" onClick={() => void handleFavorite()} data-testid="detail-favorite-button">
           <Star className="h-4 w-4" fill={record.isFavorite ? 'currentColor' : 'none'} />
           {record.isFavorite ? '已收藏' : '收藏'}
         </GlassButton>

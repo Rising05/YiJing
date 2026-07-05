@@ -74,6 +74,7 @@ export default function HistoryPage() {
 
   return (
     <PageShell>
+      <div data-testid="history-page" className="sr-only">历史记录页面</div>
       <h1 className="text-2xl font-black">历史记录</h1>
       <p className="mt-2 text-sm text-ink/60">{token && token !== 'local-mock-token' ? '优先读取后端 MySQL 历史，失败时回退本地缓存。' : '当前使用本地缓存历史。'}</p>
       {error ? <p className="mt-3 text-sm text-coral" data-testid="history-error">{error}</p> : null}
@@ -84,9 +85,9 @@ export default function HistoryPage() {
           </LiquidGlassCard>
         ) : records.length ? records.map((record) => (
           <LiquidGlassCard key={record.id} interactive>
-            <div className="p-4">
+            <div className="p-4" data-testid="history-record" data-record-id={record.id}>
               <div className="flex items-center justify-between">
-                <Link className="min-w-0 flex-1" to={`/detail/${record.id}`}>
+                <Link className="min-w-0 flex-1" to={`/detail/${record.id}`} data-testid="history-detail-link">
                   <p className="truncate font-bold">{record.title}</p>
                   <p className="mt-1 text-xs text-ink/54">{record.type === 'text-memory' ? '文本记忆' : '单词卡片'} · {new Date(record.createdAt).toLocaleString()}</p>
                 </Link>
@@ -95,10 +96,11 @@ export default function HistoryPage() {
                     className={`rounded-full p-3 ${record.isFavorite ? 'text-coral' : 'text-ink/38'}`}
                     onClick={() => void handleFavorite(record.id, record.isFavorite)}
                     aria-label={record.isFavorite ? '取消收藏' : '收藏历史'}
+                    data-testid="history-favorite-button"
                   >
                     <Star className="h-4 w-4" fill={record.isFavorite ? 'currentColor' : 'none'} />
                   </button>
-                  <button className="rounded-full p-3 text-coral" onClick={() => setConfirmDeleteId(record.id)} aria-label="删除历史">
+                  <button className="rounded-full p-3 text-coral" onClick={() => setConfirmDeleteId(record.id)} aria-label="删除历史" data-testid="history-delete-button">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -111,7 +113,7 @@ export default function HistoryPage() {
                     <button className="rounded-xl bg-white/70 px-3 py-2 text-sm font-semibold text-ink" onClick={() => setConfirmDeleteId(null)}>
                       取消
                     </button>
-                    <button className="rounded-xl bg-coral px-3 py-2 text-sm font-semibold text-white" onClick={() => void handleDelete(record.id)}>
+                    <button className="rounded-xl bg-coral px-3 py-2 text-sm font-semibold text-white" onClick={() => void handleDelete(record.id)} data-testid="history-confirm-delete-button">
                       确认删除
                     </button>
                   </div>

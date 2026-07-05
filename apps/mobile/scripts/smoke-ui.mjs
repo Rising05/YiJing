@@ -119,6 +119,7 @@ try {
   await page.click('[data-testid="word-card-generate"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="result-page"]')) && location.pathname.startsWith('/result/'), 8000)
   await page.waitFor(() => document.body.innerText.includes('单词') && document.body.innerText.includes('导出 PNG'))
+  await assertHistoryFlow(page)
 
   console.log(`ui-smoke: passed against ${baseUrl}`)
 } finally {
@@ -215,6 +216,32 @@ async function openPage() {
       throw new Error(`Timed out waiting for ${predicate.toString()}`)
     },
   }
+}
+
+async function assertHistoryFlow(page) {
+  await page.click('[data-testid="tab-history"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="history-page"]')))
+  await page.waitFor(() => document.querySelectorAll('[data-testid="history-record"]').length >= 2)
+
+  const initialCount = await page.evaluate(`document.querySelectorAll('[data-testid="history-record"]').length`)
+  assert(initialCount >= 2, 'History page should include generated text and word records')
+  await page.evaluate(`window.__yijingInitialHistoryCount = ${initialCount}`)
+
+  await page.click('[data-testid="history-favorite-button"]')
+  await page.waitFor(() => document.querySelector('[data-testid="history-favorite-button"]')?.getAttribute('aria-label') === '取消收藏')
+
+  await page.click('[data-testid="history-detail-link"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="detail-page"]')) && location.pathname.startsWith('/detail/'))
+  await page.waitFor(() => document.body.innerText.includes('模板') && (document.body.innerText.includes('单词详情') || document.body.innerText.includes('记忆点详情')))
+  const detailFavoriteText = await page.evaluate(`document.querySelector('[data-testid="detail-favorite-button"]')?.textContent ?? ''`)
+  assert(detailFavoriteText.includes('已收藏'), 'Detail page should reflect favorite state from history')
+
+  await page.click('[data-testid="tab-history"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="history-page"]')))
+  await page.click('[data-testid="history-delete-button"]')
+  await page.waitFor(() => Boolean(document.querySelector('[data-testid="history-confirm-delete-button"]')))
+  await page.click('[data-testid="history-confirm-delete-button"]')
+  await page.waitFor(() => document.querySelectorAll('[data-testid="history-record"]').length === window.__yijingInitialHistoryCount - 1)
 }
 
 async function assertHomeCardLayout(page, expectedViewportWidth) {

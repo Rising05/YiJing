@@ -2,10 +2,10 @@ import { BookOpen, History, Home, Settings } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/', label: '首页', icon: Home },
-  { to: '/text-memory', label: '生成', icon: BookOpen },
-  { to: '/history', label: '历史', icon: History },
-  { to: '/settings', label: '我的', icon: Settings },
+  { to: '/', label: '首页', icon: Home, testId: 'tab-home' },
+  { to: '/text-memory', label: '生成', icon: BookOpen, testId: 'tab-generate' },
+  { to: '/history', label: '历史', icon: History, testId: 'tab-history' },
+  { to: '/settings', label: '我的', icon: Settings, testId: 'tab-settings' },
 ]
 
 export default function BottomTabBar() {
@@ -16,6 +16,7 @@ export default function BottomTabBar() {
           <NavLink
             key={tab.to}
             to={tab.to}
+            data-testid={tab.testId}
             className={({ isActive }) =>
               `flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl text-xs transition ${
                 isActive ? 'bg-ink text-white' : 'text-ink/58'
