@@ -10,7 +10,7 @@ interface Props {
 const WordMemoryCard = forwardRef<HTMLDivElement, Props>(({ result, exportRatio = '9:16' }, ref) => {
   const template = getTemplate(result.templateId)
   return (
-    <div ref={ref} className={`export-stage ${exportRatio === '1:1' ? 'aspect-square' : 'aspect-[9/16]'}`}>
+    <div ref={ref} data-testid="export-stage" className={`export-stage ${exportRatio === '1:1' ? 'aspect-square' : 'aspect-[9/16]'}`}>
       <div className="mock-scene word-scene">
         <div className="absolute left-4 top-4 rounded-full bg-white/78 px-3 py-1 text-xs font-semibold text-ink shadow">
           {template.name}

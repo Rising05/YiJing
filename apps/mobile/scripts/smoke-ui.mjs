@@ -67,6 +67,29 @@ try {
   await page.click('[data-testid="auth-login-submit"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="result-page"]')) && location.pathname.startsWith('/result/'), 8000)
   await page.waitFor(() => document.body.innerText.includes('导出 PNG') && document.body.innerText.includes('重新生成'))
+  await assertExportStage(page, '9:16')
+  await page.click('[data-testid="ratio-1-1"]')
+  await page.waitFor(() => document.querySelector('[data-testid="ratio-1-1"]')?.classList.contains('segmented-active'))
+  await assertExportStage(page, '1:1')
+  await page.evaluate(`(() => {
+    window.__yijingDownloads = [];
+    if (!window.__yijingAnchorClickPatched) {
+      window.__yijingAnchorClickPatched = true;
+      const originalClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function patchedAnchorClick() {
+        if (this.download && String(this.href).startsWith('data:image/png')) {
+          window.__yijingDownloads.push({ download: this.download, href: this.href });
+          return;
+        }
+        return originalClick.call(this);
+      };
+    }
+  })()`)
+  await page.click('[data-testid="export-png-button"]')
+  await page.waitFor(() => {
+    const download = window.__yijingDownloads?.[0]
+    return Boolean(download?.download?.endsWith('.png') && download?.href?.startsWith('data:image/png'))
+  }, 12000)
 
   await page.navigate(baseUrl)
   await page.waitFor(() => document.body.innerText.includes('今天要记什么？'))
@@ -237,6 +260,24 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
   }
   assert(homeCardMetrics.content.left >= homeCardMetrics.fallback.left - 0.5, 'Homepage glass card content should stay inside fallback on the left')
   assert(homeCardMetrics.content.right <= homeCardMetrics.fallback.right + 0.5, 'Homepage glass card content should stay inside fallback on the right')
+}
+
+async function assertExportStage(page, expectedRatio) {
+  const metrics = await page.evaluate(`(() => {
+    const stage = document.querySelector('[data-testid="export-stage"]');
+    const watermark = stage?.querySelector('.watermark');
+    const rect = stage?.getBoundingClientRect();
+    return {
+      width: rect?.width ?? 0,
+      height: rect?.height ?? 0,
+      watermark: watermark?.textContent ?? '',
+    };
+  })()`)
+  assert(metrics.watermark === '忆境 MemoryPalace', 'Export stage should include app watermark')
+  assert(metrics.width > 0 && metrics.height > 0, 'Export stage should have visible dimensions')
+  const actualRatio = metrics.width / metrics.height
+  const targetRatio = expectedRatio === '1:1' ? 1 : 9 / 16
+  assert(Math.abs(actualRatio - targetRatio) < 0.03, `Export stage should use ${expectedRatio} ratio`)
 }
 
 async function waitForJson(url, timeoutMs = 5000) {

@@ -15,6 +15,7 @@ export default function ExportImageButton({ targetRef, ratio, onError, onStart }
   const [loading, setLoading] = useState(false)
   return (
     <GlassButton
+      data-testid="export-png-button"
       variant="secondary"
       loading={loading}
       onClick={async () => {

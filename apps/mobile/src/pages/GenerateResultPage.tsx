@@ -119,10 +119,10 @@ export default function GenerateResultPage() {
         )}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <button className={`segmented ${ratio === '9:16' ? 'segmented-active' : ''}`} onClick={() => setRatio('9:16')}>
+        <button data-testid="ratio-9-16" className={`segmented ${ratio === '9:16' ? 'segmented-active' : ''}`} onClick={() => setRatio('9:16')}>
           9:16
         </button>
-        <button className={`segmented ${ratio === '1:1' ? 'segmented-active' : ''}`} onClick={() => setRatio('1:1')}>
+        <button data-testid="ratio-1-1" className={`segmented ${ratio === '1:1' ? 'segmented-active' : ''}`} onClick={() => setRatio('1:1')}>
           1:1
         </button>
       </div>
