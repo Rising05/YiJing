@@ -89,7 +89,7 @@ npm run build:mobile
 - 后端或数据库不可用时自动回退本地 mock。
 - 本地登录状态只持久化 `user` 和 `token`，不会跨刷新保存登录弹窗开关或待执行动作。
 - 测试登录失败统一使用 `INVALID_INPUT` 错误码，避免出现后端私有错误码。
-- 后端测试登录会补齐 20 次生成额度；API smoke 会先临时耗尽额度，再重新登录验证额度恢复。
+- 后端测试登录会补齐 20 次生成额度；API smoke 会先临时耗尽额度，再重新登录验证额度恢复，并断言文本生成、单词生成和两次重新生成按 `20/0 -> 19/1 -> 18/2 -> 17/3 -> 16/4` 精确扣减。
 - 额度耗尽统一使用 `QUOTA_EXCEEDED` 错误码；后端 API smoke 会临时置 0 测试用户额度并验证拒绝生成。
 - 生成结果保存到 localStorage。
 - 结果页“重新生成”会调用后端重新生成接口；后端不可用时基于当前结果本地 mock 再生成。
@@ -401,7 +401,7 @@ npm run smoke:ui
 
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 
-`npm run smoke:api` 会验证后端主流程和关键错误码：健康检查、未登录生成拦截、错误验证码登录拦截、测试登录、测试登录补齐额度、文本超长、单词超限、内容安全拦截、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史、额度耗尽拒绝、删除账号和删除账号后旧 token 拒绝。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
+`npm run smoke:api` 会验证后端主流程和关键错误码：健康检查、未登录生成拦截、错误验证码登录拦截、测试登录、测试登录补齐额度、文本超长、单词超限、内容安全拦截、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史、额度耗尽拒绝、删除账号和删除账号后旧 token 拒绝；同时断言四次成功生成后的额度精确变为 `19/1`、`18/2`、`17/3`、`16/4`。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
 `npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、导出比例切换、水印和 PNG 下载触发、单词生成入口、单词超限错误提示、单词结果页、历史列表、历史详情、收藏状态同步、单条历史删除确认、清除缓存和删除账号。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
 

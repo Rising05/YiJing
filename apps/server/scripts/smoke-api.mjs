@@ -43,6 +43,17 @@ function auth(token) {
   return { Authorization: `Bearer ${token}` }
 }
 
+function assertCredits(result, expected, label) {
+  if (!result.credits) {
+    throw new Error(`${label} did not return credit state`)
+  }
+  if (result.credits.remaining !== expected.remaining || result.credits.used !== expected.used) {
+    throw new Error(
+      `${label} returned credits ${result.credits.remaining}/${result.credits.used}, expected ${expected.remaining}/${expected.used}`,
+    )
+  }
+}
+
 async function main() {
   console.log(`Smoke target: ${baseUrl}`)
 
@@ -127,6 +138,7 @@ async function main() {
     }),
   })
   if (!textResult.id || textResult.type !== 'text-memory') throw new Error('text generation returned invalid result')
+  assertCredits(textResult, { remaining: 19, used: 1 }, 'text generation')
   console.log('text-memory:', textResult.id)
 
   const wordResult = await request('/generation/word-card', {
@@ -142,6 +154,7 @@ async function main() {
   if (wordResult.cardMode !== 'simple' || wordResult.templateId !== 'blank_word_card_30') {
     throw new Error('word generation did not preserve simple card mode')
   }
+  assertCredits(wordResult, { remaining: 18, used: 2 }, 'word generation')
   console.log('word-card:', wordResult.id)
 
   const regenerated = await request(`/generation/${textResult.id}/regenerate`, {
@@ -151,9 +164,7 @@ async function main() {
   if (!regenerated.id || regenerated.id === textResult.id || regenerated.type !== 'text-memory') {
     throw new Error('regenerate returned invalid result')
   }
-  if (!regenerated.credits || typeof regenerated.credits.remaining !== 'number') {
-    throw new Error('regenerate did not return credit state')
-  }
+  assertCredits(regenerated, { remaining: 17, used: 3 }, 'text regenerate')
   console.log('regenerate:', regenerated.id)
 
   const regeneratedWord = await request(`/generation/${wordResult.id}/regenerate`, {
@@ -166,6 +177,7 @@ async function main() {
   if (regeneratedWord.cardMode !== 'simple' || regeneratedWord.templateId !== 'blank_word_card_30') {
     throw new Error('word regenerate did not preserve simple card mode')
   }
+  assertCredits(regeneratedWord, { remaining: 16, used: 4 }, 'word regenerate')
   console.log('word regenerate:', regeneratedWord.id)
 
   const history = await request('/history', { headers: auth(token) })
