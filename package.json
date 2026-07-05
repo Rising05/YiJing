@@ -20,6 +20,7 @@
     "check:image-storage": "npm run check:image-storage -w apps/server",
     "check:permissions": "npm run check:permissions -w apps/mobile",
     "check:release-env": "npm run check:release-env -w apps/mobile",
+    "check:tracking-sdk": "npm run check:tracking-sdk -w apps/mobile",
     "cleanup:expired-images": "npm run cleanup:expired-images -w apps/server",
     "prisma:validate": "npm run prisma:validate -w apps/server",
     "prisma:migrate": "npm run prisma:migrate -w apps/server",
