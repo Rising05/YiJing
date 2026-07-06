@@ -12,6 +12,7 @@
     "check:content-safety": "node scripts/check-content-safety.mjs",
     "check:config": "node scripts/check-runtime-config.mjs",
     "check:cors-config": "node scripts/check-cors-config.mjs",
+    "check:env-examples": "node scripts/check-env-examples.mjs",
     "check:error-codes": "node scripts/check-error-codes.mjs",
     "check:image-storage": "node scripts/check-image-storage.mjs",
     "check:image-prompts": "node scripts/check-image-prompts.mjs",

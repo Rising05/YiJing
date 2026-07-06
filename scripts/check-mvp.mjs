@@ -8,6 +8,7 @@ const steps = [
   ['build:server', ['run', 'build:server']],
   ['prisma:validate', ['run', 'prisma:validate']],
   ['check:config', ['run', 'check:config']],
+  ['check:env-examples', ['run', 'check:env-examples']],
   ['check:cors-config', ['run', 'check:cors-config']],
   ['check:auth-providers', ['run', 'check:auth-providers']],
   ['check:error-codes', ['run', 'check:error-codes']],

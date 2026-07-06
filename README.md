@@ -392,6 +392,7 @@ npm run check:content-safety
 npm run check:config
 npm run check:cors-config
 npm run check:deploy-config
+npm run check:env-examples
 npm run check:error-codes
 npm run check:image-prompts
 npm run check:image-storage
@@ -420,13 +421,15 @@ npm run smoke:ui
 
 `npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`；本地 mock 登录、生成和重新生成回退也必须受开发环境开关保护，生产发布包不能静默离线生成。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:compliance-copy` 会扫描隐私政策、用户协议、AI 免责声明、设置页入口和合规页面路由，防止 MVP 关键合规文案被误删。
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
 `npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、正式短信/微信登录开关、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。生产部署前使用 `ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production`，会额外禁止 mock、占位密钥、缺失 CORS 白名单和 localhost 图片公开地址；若 `AUTH_FORMAL_PROVIDERS` 启用 `sms` 或 `wechat`，也会要求对应短信/微信配置完整。
+
+`npm run check:env-examples` 会检查 `apps/server/.env.example` 和 `apps/server/.env.production.example` 的运行时环境变量 key 是否完整、顺序一致、无重复或意外 key，并扫描后端源码中直接引用的环境变量，防止新增运行配置后遗漏模板。`API_BASE_URL`、`LIVE_AI_SMOKE` 等脚本临时变量不会被要求写入服务端运行模板。
 
 `npm run check:cors-config` 需要先执行 `npm run build:server`，用于验证后端 CORS 行为：开发环境未配置 `ALLOWED_ORIGINS` 时允许本地调试，生产环境必须配置明确来源列表并拒绝 `*` 通配符。
 
