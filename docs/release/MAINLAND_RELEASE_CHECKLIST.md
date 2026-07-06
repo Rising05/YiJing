@@ -10,6 +10,7 @@
 | --- | --- | --- | --- |
 | 正式 App 名称 | Open | 用户/Agent-Release | 当前暂定为“忆境”，正式上架前需确认 |
 | 正式 logo 与图标资产 | Open | 用户/Agent-Design/Release | Android 当前已有受控源图；正式品牌资产仍需确认 |
+| 生产发布资料表 | Done | Agent-Release/QA | `docs/release/PRODUCTION_RELEASE_PROFILE.md` 已提供运营主体、品牌、域名、备案、服务商、法务和商店资料模板；`check:release-profile` 纳入 MVP 门禁 |
 | 版本号 | Done | Agent-Release | 前端显示版本、Android `versionName` 当前统一为 `0.1.0` |
 | 包名/App ID | Done | Agent-Release | 当前为 `cn.memorypalace.yijing` |
 
@@ -76,6 +77,7 @@
 
 ```bash
 npm run check:mvp
+npm run check:release-profile
 npm run smoke:api
 npm run smoke:live-ai
 npm run smoke:ui
