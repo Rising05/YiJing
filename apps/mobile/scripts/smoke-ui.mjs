@@ -119,6 +119,7 @@ try {
   await page.click('[data-testid="word-card-generate"]')
   await page.waitFor(() => Boolean(document.querySelector('[data-testid="result-page"]')) && location.pathname.startsWith('/result/'), 8000)
   await page.waitFor(() => document.body.innerText.includes('单词') && document.body.innerText.includes('导出 PNG'))
+  await assertHomeRecentRecords(page)
   await assertHistoryFlow(page)
   await assertSettingsFlow(page)
 
@@ -269,6 +270,22 @@ async function assertSettingsFlow(page) {
     const authState = JSON.parse(localStorage.getItem('memory-palace-auth') || '{}')?.state
     return authState?.user == null && authState?.token == null
   })
+}
+
+async function assertHomeRecentRecords(page) {
+  await page.click('[data-testid="tab-home"]')
+  await page.waitFor(() => document.body.innerText.includes('最近生成'))
+  await page.waitFor(() => document.querySelectorAll('[data-testid="home-recent-record"]').length >= 2)
+  const recentSummary = await page.evaluate(`(() => {
+    const records = Array.from(document.querySelectorAll('[data-testid="home-recent-record"]'));
+    return {
+      count: records.length,
+      text: records.map((record) => record.textContent || '').join('\\n'),
+    };
+  })()`)
+  assert(recentSummary.count >= 2, 'Homepage should show recently generated text and word records')
+  assert(recentSummary.text.includes('文本记忆'), 'Homepage recent summary should include text-memory type label')
+  assert(recentSummary.text.includes('单词卡片'), 'Homepage recent summary should include word-card type label')
 }
 
 async function assertHomeCardLayout(page, expectedViewportWidth) {

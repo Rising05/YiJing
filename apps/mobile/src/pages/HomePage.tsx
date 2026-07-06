@@ -1,14 +1,41 @@
 import { ArrowRight, BookOpen, Sparkles, Type } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import GlassButton from '../components/GlassButton'
 import LiquidGlassCard from '../components/LiquidGlassCard'
+import { fetchHistory } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import { useHistoryStore } from '../stores/historyStore'
+import type { GenerationResult } from '../types'
 import PageShell from './PageShell'
 
 export default function HomePage() {
-  const records = useHistoryStore((state) => state.records)
+  const localRecords = useHistoryStore((state) => state.records)
   const user = useAuthStore((state) => state.user)
+  const token = useAuthStore((state) => state.token)
+  const [remoteRecords, setRemoteRecords] = useState<Array<Pick<GenerationResult, 'id' | 'type' | 'title' | 'templateId' | 'backgroundImageUrl' | 'createdAt' | 'expiresAt' | 'isFavorite'>> | null>(null)
+
+  useEffect(() => {
+    if (!token || token === 'local-mock-token') {
+      setRemoteRecords(null)
+      return
+    }
+
+    let active = true
+    fetchHistory(token)
+      .then((records) => {
+        if (active) setRemoteRecords(records)
+      })
+      .catch(() => {
+        if (active) setRemoteRecords(null)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [token])
+
+  const records = (remoteRecords ?? localRecords).slice(0, 3)
 
   return (
     <PageShell>
@@ -60,15 +87,15 @@ export default function HomePage() {
         </div>
         {records.length ? (
           <div className="grid gap-3">
-            {records.slice(0, 3).map((record) => (
+            {records.map((record) => (
               <Link className="block" key={record.id} to={`/detail/${record.id}`}>
                 <LiquidGlassCard interactive>
-                  <div className="flex items-center justify-between p-4">
-                    <div>
-                      <p className="font-bold">{record.title}</p>
-                      <p className="mt-1 text-xs text-ink/56">{new Date(record.createdAt).toLocaleString()}</p>
+                  <div className="flex items-center justify-between p-4" data-testid="home-recent-record">
+                    <div className="min-w-0">
+                      <p className="truncate font-bold">{record.title}</p>
+                      <p className="mt-1 text-xs text-ink/56">{record.type === 'text-memory' ? '文本记忆' : '单词卡片'} · {new Date(record.createdAt).toLocaleString()}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-ink/42" />
+                    <ArrowRight className="ml-3 h-4 w-4 shrink-0 text-ink/42" />
                   </div>
                 </LiquidGlassCard>
               </Link>
@@ -76,7 +103,7 @@ export default function HomePage() {
           </div>
         ) : (
           <LiquidGlassCard>
-            <div className="p-5 text-sm text-ink/58">生成结果会自动出现在这里。</div>
+            <div className="p-5 text-sm text-ink/58" data-testid="home-recent-empty">生成结果会自动出现在这里。</div>
           </LiquidGlassCard>
         )}
       </section>

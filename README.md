@@ -95,6 +95,7 @@ npm run build:mobile
 - 额度耗尽统一使用 `QUOTA_EXCEEDED` 错误码；后端 API smoke 会临时置 0 测试用户额度并验证拒绝生成。
 - 生成结果保存到 localStorage。
 - 结果页“重新生成”会调用后端重新生成接口；后端不可用时基于当前结果本地 mock 再生成。
+- 首页“最近生成”在真实登录 token 下会优先读取后端 MySQL 历史摘要，失败或本地 mock 登录时继续显示本地缓存。
 - 结果页支持 Web Share 原生分享 PNG；当前环境不支持分享文件时自动下载保存。
 - 结果页导出 PNG 和分享/保存失败时会展示用户可见错误，并复用统一 `EXPORT_FAILED` 文案。
 - 历史列表和详情页支持收藏；真实后端可用时同步 MySQL，本地 mock 时写入 localStorage。
@@ -461,7 +462,7 @@ npm run smoke:ui
 
 `npm run smoke:live-ai` 是真实 AI/生图联调入口，默认会跳过以避免误耗费真实模型或图片额度。启动 MySQL、migrate 和后端服务后，配置 `AI_MOCK_MODE=false`、`LLM_API_KEY`，再设置 `LIVE_AI_SMOKE=true npm run smoke:live-ai` 可通过后端 API 生成一条文本记忆宫殿，并查询数据库 usage log 确认 `openai-compatible` 调用成功。若还配置 `IMAGE_MOCK_MODE=false` 和 `WANX_API_KEY`，脚本会要求返回真实 `backgroundImageUrl` 并确认 `wanx` usage log；如需同时验证单词卡片，增加 `LIVE_AI_SMOKE_FULL=true`。
 
-`npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、导出比例切换、水印和 PNG 下载触发、单词生成入口、单词超限错误提示、单词结果页、历史列表、历史详情、收藏状态同步、单条历史删除确认、清除缓存和删除账号。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
+`npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、导出比例切换、水印和 PNG 下载触发、单词生成入口、单词超限错误提示、单词结果页、首页最近生成摘要、历史列表、历史详情、收藏状态同步、单条历史删除确认、清除缓存和删除账号。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
 
 ## 后续 TODO
 
