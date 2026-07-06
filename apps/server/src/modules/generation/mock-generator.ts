@@ -1,34 +1,18 @@
 import { appendImagePromptRequirements } from '../../../../../packages/prompts/src/imagePrompt'
+import { TEMPLATE_MAP } from '../../../../../packages/shared/src/templates'
+import type { MemoryTemplate } from '../../../../../packages/shared/src/types'
 
 const waterMarkText = '忆境 MemoryPalace'
 
-const anchors = [
-  { key: 'a1', x: 0.22, y: 0.2, name: '左上区域' },
-  { key: 'a2', x: 0.5, y: 0.18, name: '顶部中央' },
-  { key: 'a3', x: 0.78, y: 0.2, name: '右上区域' },
-  { key: 'a4', x: 0.2, y: 0.44, name: '左侧区域' },
-  { key: 'a5', x: 0.5, y: 0.46, name: '中央区域' },
-  { key: 'a6', x: 0.8, y: 0.44, name: '右侧区域' },
-  { key: 'a7', x: 0.22, y: 0.72, name: '左下区域' },
-  { key: 'a8', x: 0.5, y: 0.75, name: '底部中央' },
-  { key: 'a9', x: 0.78, y: 0.72, name: '右下区域' },
-]
-
-const wordAnchors = Array.from({ length: 30 }, (_, index) => ({
-  key: `a${index + 1}`,
-  x: 0.2 + (index % 3) * 0.3,
-  y: 0.12 + Math.floor(index / 3) * 0.08,
-  name: `词卡位置${index + 1}`,
-}))
-
 export function createTextMemoryMock(inputText: string, contentType: string, scenePreference: string) {
   const isAncient = contentType === 'ancient_text' || /[；，。]/.test(inputText)
-  const templateId = scenePreference === 'ancient_cottage' || isAncient ? 'ancient_cottage_9' : 'study_room_9'
+  const desiredCount = textMemoryPointCount(inputText)
+  const template = selectTextTemplate({ desiredCount, isAncient, scenePreference })
   const fragments = inputText.replace(/\s+/g, '').split(/[。；;，,、]/).filter(Boolean)
-  const count = Math.min(Math.max(Math.ceil(inputText.length / 60), 3), 8)
+  const count = Math.min(desiredCount, template.maxPoints)
   const now = new Date()
   const points = Array.from({ length: count }, (_, index) => {
-    const anchor = anchors[index]
+    const anchor = template.anchors[index]
     const text = fragments[index] ?? (inputText.slice(index * 18, index * 18 + 18) || '核心句')
     const keyword = text.slice(0, Math.min(4, text.length))
     return {
@@ -49,7 +33,7 @@ export function createTextMemoryMock(inputText: string, contentType: string, sce
     title: isAncient ? '古文记忆宫殿' : '文本记忆宫殿',
     type: 'text-memory',
     contentType: isAncient ? 'ancient_text' : 'modern_text',
-    templateId,
+    templateId: template.id,
     backgroundImageUrl: '',
     points,
     explanation: '后端 Mock 阶段生成结构化记忆点，后续由 LLM 和通义万相替换。',
@@ -64,6 +48,7 @@ export function createTextMemoryMock(inputText: string, contentType: string, sce
 export function createWordCardMock(words: string[], cardMode: 'scene' | 'association' | 'simple' = 'scene') {
   const now = new Date()
   const templateId = cardMode === 'simple' || words.length > 15 ? 'blank_word_card_30' : 'airport_15'
+  const template = getTemplate(templateId)
   const normalized = words.map((word) => word.trim()).filter(Boolean)
   return {
     id: '',
@@ -73,7 +58,7 @@ export function createWordCardMock(words: string[], cardMode: 'scene' | 'associa
     templateId,
     backgroundImageUrl: '',
     words: normalized.map((word, index) => {
-      const anchor = wordAnchors[index]
+      const anchor = template.anchors[index]
       const isPhrase = word.includes(' ')
       return {
         id: index + 1,
@@ -98,4 +83,39 @@ export function createWordCardMock(words: string[], cardMode: 'scene' | 'associa
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
   }
+}
+
+function textMemoryPointCount(inputText: string) {
+  const length = inputText.replace(/\s+/g, '').length
+  if (length <= 120) return clamp(Math.ceil(length / 30), 3, 5)
+  if (length <= 280) return clamp(Math.ceil(length / 40) + 1, 5, 8)
+  return clamp(Math.floor((length - 281) / 44) + 8, 8, 12)
+}
+
+function selectTextTemplate(input: { desiredCount: number; isAncient: boolean; scenePreference: string }) {
+  const preferredTemplate = scenePreferenceToTemplate(input.scenePreference)
+  if (preferredTemplate && preferredTemplate.maxPoints >= input.desiredCount) return preferredTemplate
+  if (preferredTemplate && input.desiredCount <= 9) return preferredTemplate
+  if (input.desiredCount > 9) return input.isAncient ? getTemplate('palace_hall_12') : getTemplate('museum_gallery_12')
+  return input.isAncient ? getTemplate('ancient_cottage_9') : getTemplate('study_room_9')
+}
+
+function scenePreferenceToTemplate(scenePreference: string) {
+  const map: Record<string, string> = {
+    study_room: 'study_room_9',
+    classroom: 'classroom_9',
+    ancient_cottage: 'ancient_cottage_9',
+    palace_hall: 'palace_hall_12',
+    street_path: 'street_path_8',
+    museum_gallery: 'museum_gallery_12',
+  }
+  return map[scenePreference] ? getTemplate(map[scenePreference]) : null
+}
+
+function getTemplate(templateId: string): MemoryTemplate {
+  return TEMPLATE_MAP[templateId] ?? TEMPLATE_MAP.study_room_9
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
 }

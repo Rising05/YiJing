@@ -10,7 +10,7 @@ export function buildTextMemoryPrompt(input: TextMemoryPromptInput) {
 
 任务：
 1. 判断内容类型：ancient_text 或 modern_text。
-2. 根据文本长度拆分 3 到 12 个核心记忆点。
+2. 根据文本长度拆分核心记忆点：1-120 字输出 3-5 个点；121-280 字输出 5-8 个点；281-500 字输出 8-12 个点。
 3. 为每个记忆点选择 memoryMethod：meaning、homophone、glyph、action、emotion、logic、mixed。
 4. 为每个记忆点生成具体可画的 visualObject。
 5. 根据模板列表选择 templateId。

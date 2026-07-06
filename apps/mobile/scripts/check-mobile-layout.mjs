@@ -81,6 +81,11 @@ function checkLiquidGlassLayout() {
   )
   assertIncludes(
     files.liquidGlassCard,
+    '<div className="glass-effect-layer" aria-hidden="true">',
+    'LiquidGlassCard must isolate liquid-glass-react inside a clipped background layer',
+  )
+  assertIncludes(
+    files.liquidGlassCard,
     '<div className="glass-fallback">{children}</div>',
     'LiquidGlassCard content must render in the owned fallback layer',
   )
@@ -92,7 +97,8 @@ function checkLiquidGlassLayout() {
 
   assertIncludes(files.styles, '.glass-shell {', 'globals.css must define the glass shell')
   assertIncludes(files.styles, 'clip-path: inset(0 round 24px);', 'Glass layers must keep rounded clipping')
-  assertIncludes(files.styles, '.glass-shell > .glass-liquid {', 'globals.css must scope the liquid effect layer')
+  assertIncludes(files.styles, '.glass-effect-layer {', 'globals.css must define the isolated liquid effect layer')
+  assertIncludes(files.styles, '.glass-shell > .glass-effect-layer > .glass-liquid', 'globals.css must scope the liquid effect layer')
   assertIncludes(files.styles, 'pointer-events: none;', 'Liquid effect layer must not steal taps from card content')
   assertIncludes(files.styles, '.glass-fallback {', 'globals.css must define the fallback content layer')
   assertIncludes(files.styles, '.glass-shell .glass-liquid .glass-fallback {', 'globals.css must round old nested fallback paths as a compatibility guard')

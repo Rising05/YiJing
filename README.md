@@ -91,7 +91,7 @@ npm run build:mobile
 - 测试登录失败统一使用 `INVALID_INPUT` 错误码，避免出现后端私有错误码。
 - 后端已预留正式短信和微信登录端点：`POST /api/auth/sms-code`、`POST /api/auth/sms-login`、`POST /api/auth/wechat-login`。在短信服务商和微信开放平台未配置前，这些端点统一返回 `FEATURE_NOT_CONFIGURED`，不会误发 token 或创建正式用户。
 - 后端生产配置检查支持 `AUTH_FORMAL_PROVIDERS=none|sms|wechat|sms,wechat`：保持 `none` 时正式登录继续关闭；启用 `sms` 或 `wechat` 时必须补齐短信服务商或微信开放平台配置，否则 `check:config -- --production` 会失败。
-- 后端测试登录会补齐 20 次生成额度；API smoke 会先临时耗尽额度，再重新登录验证额度恢复，并断言文本生成、单词生成和两次重新生成按 `20/0 -> 19/1 -> 18/2 -> 17/3 -> 16/4` 精确扣减。
+- 后端测试登录会补齐 20 次生成额度；API smoke 会先临时耗尽额度，再重新登录验证额度恢复，并断言短文本生成、长文本生成、单词生成和两次重新生成按 `20/0 -> 19/1 -> 18/2 -> 17/3 -> 16/4 -> 15/5` 精确扣减。
 - 额度耗尽统一使用 `QUOTA_EXCEEDED` 错误码；后端 API smoke 会临时置 0 测试用户额度并验证拒绝生成。
 - 生成结果保存到 localStorage。
 - 结果页“重新生成”会调用后端重新生成接口；后端不可用时基于当前结果本地 mock 再生成。
@@ -122,7 +122,7 @@ npm run build:mobile
 - Android launcher 图标已使用 `apps/mobile/src/assets/logo.png` 生成多密度资源。
 - 前端显示版本和 Android `versionName` 当前统一为 `0.1.0`。
 - `npm run check:release-metadata` 会校验 Capacitor appId/App 名、Android applicationId/namespace/strings、前端版本和 Android `versionName` 是否一致。
-- `LiquidGlassCard` 继续封装 `liquid-glass-react`，但真实内容层已和库动效层解耦：库只负责绝对铺满的玻璃背景，我们自己的 `.glass-fallback` 负责圆角、边框、阴影和内容布局；首页入口卡片圆角裁切、左右不被截断、fallback 位于动效层之上、内容层本身圆角裁切、禁止 fallback 回到库内部 wrapper 和无水平溢出已纳入 390px/569px UI smoke。
+- `LiquidGlassCard` 继续封装 `liquid-glass-react`，但真实内容层已和库动效层解耦：库被隔离在绝对铺满的 `.glass-effect-layer` 背景层，我们自己的 `.glass-fallback` 负责圆角、边框、阴影和内容布局；首页入口卡片圆角裁切、左右不被截断、fallback 位于动效层之上、内容层本身圆角裁切、禁止 fallback 回到库内部 wrapper 和无水平溢出已纳入 390px/569px UI smoke。
 - 前端生成流程使用 `@memory-palace/shared` 的统一错误码标签；`UNAUTHORIZED` 会重新弹出登录弹窗，其它已知错误码会显示稳定用户文案。
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
 - `npm run check:mobile-layout` 会检查移动端 safe area、44px 以上按钮触控高度、底部导航触控高度，以及 Liquid Glass 内容层/动效层/首页标注内容层布局约束。
@@ -458,7 +458,7 @@ npm run smoke:ui
 
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 
-`npm run smoke:api` 会验证后端主流程和关键错误码：健康检查、未登录生成拦截、错误验证码登录拦截、正式短信/微信登录未配置拦截、测试登录、测试登录补齐额度、文本超长、单词超限、内容安全拦截、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史、额度耗尽拒绝、删除账号和删除账号后旧 token 拒绝；同时断言四次成功生成后的额度精确变为 `19/1`、`18/2`、`17/3`、`16/4`。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
+`npm run smoke:api` 会验证后端主流程和关键错误码：健康检查、未登录生成拦截、错误验证码登录拦截、正式短信/微信登录未配置拦截、测试登录、测试登录补齐额度、文本超长、单词超限、内容安全拦截、短文本生成、长文本 8-12 点生成、canonical anchor 校验、单词生成、重新生成、历史列表、详情、收藏、删除历史、额度耗尽拒绝、删除账号和删除账号后旧 token 拒绝；同时断言五次成功生成后的额度精确变为 `19/1`、`18/2`、`17/3`、`16/4`、`15/5`。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
 
 `npm run smoke:live-ai` 是真实 AI/生图联调入口，默认会跳过以避免误耗费真实模型或图片额度。启动 MySQL、migrate 和后端服务后，配置 `AI_MOCK_MODE=false`、`LLM_API_KEY`，再设置 `LIVE_AI_SMOKE=true npm run smoke:live-ai` 可通过后端 API 生成一条文本记忆宫殿，并查询数据库 usage log 确认 `openai-compatible` 调用成功。若还配置 `IMAGE_MOCK_MODE=false` 和 `WANX_API_KEY`，脚本会要求返回真实 `backgroundImageUrl` 并确认 `wanx` usage log；如需同时验证单词卡片，增加 `LIVE_AI_SMOKE_FULL=true`。
 

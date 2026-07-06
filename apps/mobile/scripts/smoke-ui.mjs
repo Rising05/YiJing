@@ -321,6 +321,7 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
       main: read('main', document.querySelector('main')),
       link: read('link', link),
       shell: read('shell', link?.querySelector('.glass-shell')),
+      effectLayer: read('effectLayer', link?.querySelector('.glass-effect-layer')),
       liquid: read('liquid', link?.querySelector('.glass-liquid')),
       svg: read('svg', link?.querySelector('.glass-liquid > svg')),
       glass: read('glass', link?.querySelector('.glass-liquid > .glass')),
@@ -330,7 +331,7 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
       nestedFallbackCount: link?.querySelectorAll('.glass-liquid .glass-fallback')?.length ?? 0,
     };
   })()`)
-  const layers = ['link', 'shell', 'liquid', 'svg', 'glass', 'wrapper', 'fallback', 'content']
+  const layers = ['link', 'shell', 'effectLayer', 'liquid', 'svg', 'glass', 'wrapper', 'fallback', 'content']
   assert(homeCardMetrics.viewportWidth === expectedViewportWidth, `Homepage viewport should be ${expectedViewportWidth}px`)
   assert(homeCardMetrics.documentWidth <= homeCardMetrics.viewportWidth, 'Homepage should not have horizontal overflow')
   assert(homeCardMetrics.nestedFallbackCount === 0, 'Homepage content fallback must stay outside liquid-glass-react internal wrappers')
@@ -338,6 +339,8 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
   assert(homeCardMetrics.main.right <= homeCardMetrics.viewportWidth + 0.5, 'Homepage main should stay inside viewport on the right')
   assert(homeCardMetrics.link.left > 0, 'Homepage glass card should not touch or disappear behind the left viewport edge')
   assert(homeCardMetrics.link.right < homeCardMetrics.viewportWidth, 'Homepage glass card should not touch or disappear behind the right viewport edge')
+  assert(homeCardMetrics.content.left > 0, 'Homepage selected content layer should not touch or disappear behind the left viewport edge')
+  assert(homeCardMetrics.content.right < homeCardMetrics.viewportWidth, 'Homepage selected content layer should not touch or disappear behind the right viewport edge')
   for (const layer of layers) {
     const metrics = homeCardMetrics[layer]
     assert(!metrics.missing && metrics.width > 0, `Homepage glass card layer is missing: ${layer}`)
@@ -349,6 +352,8 @@ async function assertHomeCardLayout(page, expectedViewportWidth) {
   }
   assert(homeCardMetrics.wrapper.position === 'absolute', 'Homepage glass effect wrapper should stay in the absolute background layer')
   assert(homeCardMetrics.wrapper.transform === 'none', 'Homepage glass card wrapper should not inherit library transforms')
+  assert(homeCardMetrics.effectLayer.left === homeCardMetrics.shell.left, 'Homepage glass effect layer should align with shell on the left')
+  assert(homeCardMetrics.effectLayer.top === homeCardMetrics.shell.top, 'Homepage glass effect layer should align with shell on the top')
   assert(homeCardMetrics.liquid.left === homeCardMetrics.shell.left, 'Homepage liquid layer should align with shell on the left')
   assert(homeCardMetrics.liquid.top === homeCardMetrics.shell.top, 'Homepage liquid layer should align with shell on the top')
   assert(homeCardMetrics.glass.display === 'block', 'Homepage liquid glass inner layer should not use inline-flex sizing')

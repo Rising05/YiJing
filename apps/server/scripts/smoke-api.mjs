@@ -152,8 +152,23 @@ async function main() {
     }),
   })
   if (!textResult.id || textResult.type !== 'text-memory') throw new Error('text generation returned invalid result')
+  assertTextPoints(textResult, { min: 3, max: 5 }, 'short text generation')
   assertCredits(textResult, { remaining: 19, used: 1 }, 'text generation')
   console.log('text-memory:', textResult.id)
+
+  const longTextResult = await request('/generation/text-memory', {
+    method: 'POST',
+    headers: auth(token),
+    body: JSON.stringify({
+      inputText: '少年读书时，先记山川形势，再记人物言行，最后把每一段意思连成一条清楚的路线。清晨从书房门口出发，看见案上的笔墨，想到文章开头；走到窗边，看见远山与流水，想到承接的景物；绕过屏风，看见灯火与竹影，想到情感变化；最后回到桌前，把主题收束成一句可以背出的提醒。'.repeat(3),
+      contentType: 'modern_text',
+      scenePreference: 'auto',
+    }),
+  })
+  if (!longTextResult.id || longTextResult.type !== 'text-memory') throw new Error('long text generation returned invalid result')
+  assertTextPoints(longTextResult, { min: 8, max: 12 }, 'long text generation')
+  assertCredits(longTextResult, { remaining: 18, used: 2 }, 'long text generation')
+  console.log('long text-memory:', longTextResult.id)
 
   const wordResult = await request('/generation/word-card', {
     method: 'POST',
@@ -168,7 +183,8 @@ async function main() {
   if (wordResult.cardMode !== 'simple' || wordResult.templateId !== 'blank_word_card_30') {
     throw new Error('word generation did not preserve simple card mode')
   }
-  assertCredits(wordResult, { remaining: 18, used: 2 }, 'word generation')
+  assertWordAnchors(wordResult, 'word generation')
+  assertCredits(wordResult, { remaining: 17, used: 3 }, 'word generation')
   console.log('word-card:', wordResult.id)
 
   const regenerated = await request(`/generation/${textResult.id}/regenerate`, {
@@ -178,7 +194,7 @@ async function main() {
   if (!regenerated.id || regenerated.id === textResult.id || regenerated.type !== 'text-memory') {
     throw new Error('regenerate returned invalid result')
   }
-  assertCredits(regenerated, { remaining: 17, used: 3 }, 'text regenerate')
+  assertCredits(regenerated, { remaining: 16, used: 4 }, 'text regenerate')
   console.log('regenerate:', regenerated.id)
 
   const regeneratedWord = await request(`/generation/${wordResult.id}/regenerate`, {
@@ -191,11 +207,12 @@ async function main() {
   if (regeneratedWord.cardMode !== 'simple' || regeneratedWord.templateId !== 'blank_word_card_30') {
     throw new Error('word regenerate did not preserve simple card mode')
   }
-  assertCredits(regeneratedWord, { remaining: 16, used: 4 }, 'word regenerate')
+  assertWordAnchors(regeneratedWord, 'word regenerate')
+  assertCredits(regeneratedWord, { remaining: 15, used: 5 }, 'word regenerate')
   console.log('word regenerate:', regeneratedWord.id)
 
   const history = await request('/history', { headers: auth(token) })
-  if (!Array.isArray(history) || history.length < 4) throw new Error('history did not include generated records')
+  if (!Array.isArray(history) || history.length < 5) throw new Error('history did not include generated records')
   console.log('history:', history.length)
 
   const detail = await request(`/history/${textResult.id}`, { headers: auth(token) })
@@ -234,6 +251,28 @@ async function main() {
 
   await expectRequestFailure('/history', { headers: auth(token) }, 'UNAUTHORIZED')
   console.log('deleted token rejected: ok')
+}
+
+function assertTextPoints(result, { min, max }, label) {
+  if (!Array.isArray(result.points) || result.points.length < min || result.points.length > max) {
+    throw new Error(`${label} returned ${result.points?.length ?? 0} points, expected ${min}-${max}`)
+  }
+  for (const point of result.points) {
+    if (/^a\d+$/.test(point.anchorKey ?? '')) {
+      throw new Error(`${label} returned legacy mock anchorKey ${point.anchorKey}`)
+    }
+  }
+}
+
+function assertWordAnchors(result, label) {
+  if (!Array.isArray(result.words) || !result.words.length) {
+    throw new Error(`${label} returned no words`)
+  }
+  for (const word of result.words) {
+    if (/^a\d+$/.test(word.anchorKey ?? '')) {
+      throw new Error(`${label} returned legacy mock anchorKey ${word.anchorKey}`)
+    }
+  }
 }
 
 async function setQuota(userId, data) {
