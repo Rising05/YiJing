@@ -90,6 +90,7 @@ npm run build:mobile
 - 本地登录状态只持久化 `user` 和 `token`，不会跨刷新保存登录弹窗开关或待执行动作。
 - 测试登录失败统一使用 `INVALID_INPUT` 错误码，避免出现后端私有错误码。
 - 后端已预留正式短信和微信登录端点：`POST /api/auth/sms-code`、`POST /api/auth/sms-login`、`POST /api/auth/wechat-login`。在短信服务商和微信开放平台未配置前，这些端点统一返回 `FEATURE_NOT_CONFIGURED`，不会误发 token 或创建正式用户。
+- 后端生产配置检查支持 `AUTH_FORMAL_PROVIDERS=none|sms|wechat|sms,wechat`：保持 `none` 时正式登录继续关闭；启用 `sms` 或 `wechat` 时必须补齐短信服务商或微信开放平台配置，否则 `check:config -- --production` 会失败。
 - 后端测试登录会补齐 20 次生成额度；API smoke 会先临时耗尽额度，再重新登录验证额度恢复，并断言文本生成、单词生成和两次重新生成按 `20/0 -> 19/1 -> 18/2 -> 17/3 -> 16/4` 精确扣减。
 - 额度耗尽统一使用 `QUOTA_EXCEEDED` 错误码；后端 API smoke 会临时置 0 测试用户额度并验证拒绝生成。
 - 生成结果保存到 localStorage。
@@ -141,7 +142,7 @@ cp apps/server/.env.production.example apps/server/.env.production
 ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production
 ```
 
-生产检查会要求 `NODE_ENV=production`、真实 JWT Secret、`ALLOWED_ORIGINS` CORS 白名单、关闭 AI/生图 mock、配置 LLM/通义万相 Key，并确保图片有 30 天保留所需的持久化存储配置。脚本只报告缺失项和风险，不会打印密钥值。
+生产检查会要求 `NODE_ENV=production`、真实 JWT Secret、`ALLOWED_ORIGINS` CORS 白名单、关闭 AI/生图 mock、配置 LLM/通义万相 Key，并确保图片有 30 天保留所需的持久化存储配置。正式短信/微信登录默认保持 `AUTH_FORMAL_PROVIDERS=none`；后续启用 `sms` 或 `wechat` 时必须补齐对应服务商配置。脚本只报告缺失项和风险，不会打印密钥值。
 
 启动后端：
 
@@ -425,7 +426,7 @@ npm run smoke:ui
 
 `npm run check:content-safety` 需要先执行 `npm run build:server`，用于验证后端 MVP 内容安全规则：正常学习内容应放行，色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和明显违反中国大陆法律法规的内容应返回 `CONTENT_BLOCKED`。
 
-`npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。生产部署前使用 `ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production`，会额外禁止 mock、占位密钥、缺失 CORS 白名单和 localhost 图片公开地址。
+`npm run check:config` 会读取 `apps/server/.env`，不存在时回退 `apps/server/.env.example`，检查后端运行、正式短信/微信登录开关、真实 LLM、通义万相和对象存储配置是否齐全。脚本不会打印 API Key，只报告缺失项、mock 状态和发布前 warning；如需检查其他文件可设置 `ENV_FILE=path/to/.env`。生产部署前使用 `ENV_FILE=apps/server/.env.production npm run check:config -w apps/server -- --production`，会额外禁止 mock、占位密钥、缺失 CORS 白名单和 localhost 图片公开地址；若 `AUTH_FORMAL_PROVIDERS` 启用 `sms` 或 `wechat`，也会要求对应短信/微信配置完整。
 
 `npm run check:cors-config` 需要先执行 `npm run build:server`，用于验证后端 CORS 行为：开发环境未配置 `ALLOWED_ORIGINS` 时允许本地调试，生产环境必须配置明确来源列表并拒绝 `*` 通配符。
 
@@ -435,7 +436,7 @@ npm run smoke:ui
 
 `npm run check:mainland-release` 会检查 `docs/release/MAINLAND_RELEASE_CHECKLIST.md` 是否覆盖正式名称/logo、短信/微信登录、隐私政策、用户协议、删除账号、30 天保存策略、内容安全、权限、无广告追踪、真实 AI/生图/对象存储、云服务器、域名、HTTPS、备案和原生打包阻塞项，并确认 README/SPEC 已引用该清单。
 
-`npm run check:production-config` 会用临时 env 自测生产配置规则：一份安全生产配置必须通过，一份 mock/占位/localhost 配置必须失败。这个检查不需要真实 API Key，也不会连接外部服务。
+`npm run check:production-config` 会用临时 env 自测生产配置规则：正式登录关闭的安全生产配置必须通过，正式登录启用且配置齐全的生产配置必须通过，正式登录启用但缺配置、mock/占位/localhost 等不安全配置必须失败。这个检查不需要真实 API Key，也不会连接外部服务。
 
 `npm run check:error-codes` 会扫描 `apps/server/src` 中显式返回或抛出的业务错误码，并确认每个码都在 `packages/shared` 的 `ErrorCode` 和 `ErrorLabels` 中覆盖，防止真实 LLM/生图错误变成前端未知私有码。
 

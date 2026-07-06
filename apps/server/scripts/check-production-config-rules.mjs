@@ -15,6 +15,7 @@ try {
     PORT: '3000',
     NODE_ENV: 'production',
     ALLOWED_ORIGINS: 'https://app.example.com,capacitor://localhost',
+    AUTH_FORMAL_PROVIDERS: 'none',
     AI_MOCK_MODE: 'false',
     LLM_BASE_URL: 'https://api.deepseek.com/v1',
     LLM_API_KEY: 'ci_llm_key_not_real_for_rule_test',
@@ -31,12 +32,67 @@ try {
   })
   expectStatus(validEnvPath, 0, 'valid production config')
 
+  const formalAuthEnvPath = writeEnv('formal-auth.env', {
+    DATABASE_URL: 'mysql://yijing:yijing@db.internal:3306/yijing',
+    JWT_SECRET: 'ci-production-secret-with-at-least-thirty-two-characters',
+    PORT: '3000',
+    NODE_ENV: 'production',
+    ALLOWED_ORIGINS: 'https://app.example.com,capacitor://localhost',
+    AUTH_FORMAL_PROVIDERS: 'sms,wechat',
+    SMS_PROVIDER: 'aliyun',
+    SMS_ENDPOINT: 'https://dysmsapi.aliyuncs.com',
+    SMS_ACCESS_KEY_ID: 'ci_sms_access_key_id',
+    SMS_ACCESS_KEY_SECRET: 'ci_sms_access_key_secret',
+    SMS_SIGN_NAME: '忆境',
+    SMS_TEMPLATE_CODE: 'SMS_123456789',
+    WECHAT_APP_ID: 'wx1234567890abcdef',
+    WECHAT_APP_SECRET: 'ci_wechat_app_secret',
+    WECHAT_UNIVERSAL_LINK: 'https://app.example.com/wechat/',
+    AI_MOCK_MODE: 'false',
+    LLM_BASE_URL: 'https://api.deepseek.com/v1',
+    LLM_API_KEY: 'ci_llm_key_not_real_for_rule_test',
+    LLM_MODEL: 'deepseek-chat',
+    LLM_JSON_RETRY_COUNT: '1',
+    IMAGE_MOCK_MODE: 'false',
+    WANX_BASE_URL: 'https://dashscope.aliyuncs.com',
+    WANX_API_KEY: 'ci_wanx_key_not_real_for_rule_test',
+    WANX_MODEL: 'wan2.6-t2i',
+    WANX_SIZE: '960*1696',
+    STORAGE_PROVIDER: 'local',
+    LOCAL_STORAGE_DIR: 'uploads/generated-images',
+    PUBLIC_BASE_URL: 'https://example.com',
+  })
+  expectStatus(formalAuthEnvPath, 0, 'formal auth production config')
+
+  const unsafeFormalAuthEnvPath = writeEnv('unsafe-formal-auth.env', {
+    DATABASE_URL: 'mysql://yijing:yijing@db.internal:3306/yijing',
+    JWT_SECRET: 'ci-production-secret-with-at-least-thirty-two-characters',
+    PORT: '3000',
+    NODE_ENV: 'production',
+    ALLOWED_ORIGINS: 'https://app.example.com,capacitor://localhost',
+    AUTH_FORMAL_PROVIDERS: 'sms,wechat',
+    AI_MOCK_MODE: 'false',
+    LLM_BASE_URL: 'https://api.deepseek.com/v1',
+    LLM_API_KEY: 'ci_llm_key_not_real_for_rule_test',
+    LLM_MODEL: 'deepseek-chat',
+    IMAGE_MOCK_MODE: 'false',
+    WANX_BASE_URL: 'https://dashscope.aliyuncs.com',
+    WANX_API_KEY: 'ci_wanx_key_not_real_for_rule_test',
+    WANX_MODEL: 'wan2.6-t2i',
+    WANX_SIZE: '960*1696',
+    STORAGE_PROVIDER: 'local',
+    LOCAL_STORAGE_DIR: 'uploads/generated-images',
+    PUBLIC_BASE_URL: 'https://example.com',
+  })
+  expectStatus(unsafeFormalAuthEnvPath, 1, 'unsafe formal auth production config')
+
   const unsafeEnvPath = writeEnv('unsafe.env', {
     DATABASE_URL: 'mysql://yijing:yijing@localhost:3307/yijing',
     JWT_SECRET: 'replace-with-a-long-random-secret',
     PORT: '3000',
     NODE_ENV: 'production',
     ALLOWED_ORIGINS: '*',
+    AUTH_FORMAL_PROVIDERS: 'none',
     AI_MOCK_MODE: 'true',
     LLM_BASE_URL: 'https://api.deepseek.com/v1',
     LLM_API_KEY: '',
@@ -51,7 +107,7 @@ try {
   })
   expectStatus(unsafeEnvPath, 1, 'unsafe production config')
 
-  console.log('production-config-rules: valid pass and unsafe fail checks passed')
+  console.log('production-config-rules: valid, formal auth, and unsafe fail checks passed')
 } finally {
   rmSync(tempDir, { recursive: true, force: true })
 }

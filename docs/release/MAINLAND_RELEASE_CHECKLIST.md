@@ -21,6 +21,7 @@
 | 手机号短信登录 | Open | 用户/Agent-Backend | 需确认短信服务商并配置正式服务 |
 | 微信移动 App 登录 | Open | 用户/Agent-Backend | 需配置微信开放平台移动应用信息 |
 | 正式登录未配置拦截 | Done | Agent-Backend/QA | `check:auth-providers` 和 API smoke 覆盖 `FEATURE_NOT_CONFIGURED` |
+| 正式登录生产配置门禁 | Done | Agent-Backend/Release/QA | `AUTH_FORMAL_PROVIDERS` 默认 `none`；启用 `sms`/`wechat` 时 `check:config -- --production` 要求对应配置完整 |
 
 ## 3. 合规与用户权利
 

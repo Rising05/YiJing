@@ -20,6 +20,7 @@ const productionMode = process.argv.includes('--production') || env.NODE_ENV ===
 const findings = []
 
 checkCore()
+checkFormalAuth()
 checkLlm()
 checkImage()
 checkStorage()
@@ -52,6 +53,46 @@ function checkCore() {
   const port = Number(env.PORT ?? 3000)
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     error('PORT must be an integer between 1 and 65535')
+  }
+}
+
+function checkFormalAuth() {
+  const rawProviders = csv('AUTH_FORMAL_PROVIDERS').map((provider) => provider.toLowerCase())
+  const providers = rawProviders.length ? rawProviders : ['none']
+  const enabledProviders = providers.filter((provider) => provider !== 'none')
+  const supportedProviders = new Set(['none', 'sms', 'wechat'])
+
+  for (const provider of providers) {
+    if (!supportedProviders.has(provider)) {
+      error('AUTH_FORMAL_PROVIDERS must contain only none, sms, or wechat')
+    }
+  }
+  if (providers.includes('none') && enabledProviders.length) {
+    error('AUTH_FORMAL_PROVIDERS must not combine none with sms or wechat')
+  }
+
+  if (!enabledProviders.length) {
+    if (productionMode) {
+      warn('Formal SMS/WeChat login is disabled; production will rely on the MVP test login until a provider is configured')
+    } else {
+      info('Formal SMS/WeChat login is disabled; placeholder endpoints should return FEATURE_NOT_CONFIGURED')
+    }
+    return
+  }
+
+  if (enabledProviders.includes('sms')) {
+    requireRealValue('SMS_PROVIDER', 'AUTH_FORMAL_PROVIDERS=sms requires SMS_PROVIDER')
+    requireRealValue('SMS_ACCESS_KEY_ID', 'AUTH_FORMAL_PROVIDERS=sms requires SMS_ACCESS_KEY_ID')
+    requireRealValue('SMS_ACCESS_KEY_SECRET', 'AUTH_FORMAL_PROVIDERS=sms requires SMS_ACCESS_KEY_SECRET')
+    requireRealValue('SMS_SIGN_NAME', 'AUTH_FORMAL_PROVIDERS=sms requires SMS_SIGN_NAME')
+    requireRealValue('SMS_TEMPLATE_CODE', 'AUTH_FORMAL_PROVIDERS=sms requires SMS_TEMPLATE_CODE')
+    optionalUrl('SMS_ENDPOINT', 'SMS_ENDPOINT must be a valid URL when provided')
+  }
+
+  if (enabledProviders.includes('wechat')) {
+    requireRealValue('WECHAT_APP_ID', 'AUTH_FORMAL_PROVIDERS=wechat requires WECHAT_APP_ID')
+    requireRealValue('WECHAT_APP_SECRET', 'AUTH_FORMAL_PROVIDERS=wechat requires WECHAT_APP_SECRET')
+    optionalUrl('WECHAT_UNIVERSAL_LINK', 'WECHAT_UNIVERSAL_LINK must be a valid URL when provided')
   }
 }
 
@@ -256,6 +297,11 @@ function csv(name) {
 
 function requireValue(name, message) {
   if (!env[name]) error(message)
+}
+
+function requireRealValue(name, message) {
+  requireValue(name, message)
+  if (isPlaceholder(env[name])) error(`${message}; replace the example placeholder before enabling the provider`)
 }
 
 function requireUrl(name, message) {
