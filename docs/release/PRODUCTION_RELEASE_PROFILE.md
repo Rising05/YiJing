@@ -62,7 +62,7 @@
 
 | 项目 | 状态 | 当前值 | 说明 |
 | --- | --- | --- | --- |
-| Android 签名证书 | TODO | 待生成 | 不要提交 keystore；只记录保管位置和负责人 |
+| Android 签名证书 | Ready for QA | `apps/mobile/android/keystore.properties.example` | 不要提交真实 keystore；`check:android-release-config` 会检查模板、Gradle 接线和防提交规则 |
 | Android 应用市场 | TODO | 待确认 | 例如应用宝、华为、小米、OPPO、vivo 等 |
 | Apple Developer Team | TODO | 待确认 | iOS 上架前需要 |
 | iOS Bundle ID | Done | `cn.memorypalace.yijing` | 需和 Apple Developer 后台一致 |

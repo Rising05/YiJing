@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "check:android-release-config": "node scripts/check-android-release-config.mjs",
     "check:compliance-copy": "node scripts/check-compliance-copy.mjs",
     "check:frontend-secrets": "node scripts/check-frontend-secrets.mjs",
     "check:mobile-layout": "node scripts/check-mobile-layout.mjs",

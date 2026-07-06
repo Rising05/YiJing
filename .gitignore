@@ -14,3 +14,8 @@ apps/mobile/vite.config.js
 apps/mobile/vite.config.d.ts
 apps/server/uploads/
 .reasonix/
+
+# Android release signing secrets
+*.jks
+*.keystore
+apps/mobile/android/keystore.properties

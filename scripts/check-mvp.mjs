@@ -29,6 +29,7 @@ const steps = [
   ['check:compliance-copy', ['run', 'check:compliance-copy']],
   ['check:permissions', ['run', 'check:permissions']],
   ['check:tracking-sdk', ['run', 'check:tracking-sdk']],
+  ['check:android-release-config', ['run', 'check:android-release-config']],
   ['check:release-metadata', ['run', 'check:release-metadata']],
   ['check:release-env', ['run', 'check:release-env']],
 ]

@@ -69,6 +69,7 @@
 | 项目 | 状态 | Owner | 证据/下一步 |
 | --- | --- | --- | --- |
 | Android 工程 | Done | Agent-Release | `apps/mobile/android` 已生成 |
+| Android release 签名配置 | Ready for QA | Agent-Release/QA | `keystore.properties.example`、Gradle 可选签名接线和 `check:android-release-config` 已完成；真实 keystore 仍需用户本地生成并安全保存 |
 | Android APK/AAB 构建 | Blocked | 用户/Agent-Release | 当前缺 Java 与 Android SDK |
 | iOS 工程 | Blocked | 用户/Agent-Release | 当前缺完整 Xcode 与 CocoaPods |
 | 发布环境报告 | Done | Agent-Release/QA | `npm run check:release-env` 会报告本机阻塞项 |

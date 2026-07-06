@@ -350,6 +350,8 @@ open -a "Android Studio" apps/mobile/android
 
 Android `versionCode` 当前为 `1`，`versionName` 为 `0.1.0`，与前端设置页/关于页显示版本保持一致。
 
+Android release 签名已预留 `apps/mobile/android/keystore.properties.example`；复制为 `apps/mobile/android/keystore.properties` 并填写真实 keystore 信息后，Gradle release 构建会自动使用该签名配置。真实 `keystore.properties`、`*.jks` 和 `*.keystore` 已加入 `.gitignore`，可用 `npm run check:android-release-config` 检查签名模板、Gradle 接线和防提交规则。
+
 ## 中国大陆发布注意事项
 
 发布交接清单见 `docs/release/MAINLAND_RELEASE_CHECKLIST.md`；正式运营、品牌、域名、备案、服务商、法务和应用商店资料统一填写到 `docs/release/PRODUCTION_RELEASE_PROFILE.md`。可用 `npm run check:mainland-release` 和 `npm run check:release-profile` 检查清单、资料表、README、SPEC 和脚本入口是否保持同步。
@@ -388,6 +390,7 @@ npm run dev:mobile
 npm run dev:server
 npm run check:ai-templates
 npm run check:ai-retry
+npm run check:android-release-config
 npm run check:compliance-copy
 npm run check:content-safety
 npm run check:config
@@ -417,13 +420,15 @@ npm run smoke:ui
 
 `npm run check:ai-retry` 需要先执行 `npm run build:server`，用于模拟真实 LLM 模式下第一次返回合法 JSON 但非法 `anchorKey`、第二次返回有效结构，确保解析和 schema/anchor 校验处于同一个重试闭环。
 
+`npm run check:android-release-config` 会检查 Android release 签名模板、Gradle `keystore.properties` 接线、`.gitignore` 防提交规则，并扫描仓库树中是否误放了真实 `*.jks`、`*.keystore` 或 `keystore.properties`。
+
 `npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
 
 `npm run check:mobile-layout` 会检查 `GlassButton`、底部导航、页面壳、登录弹窗和 Liquid Glass 卡片的关键移动端布局约束，覆盖 SPEC 技术验收中的按钮触控高度和 safe area 基线。
 
 `npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`；本地 mock 登录、生成和重新生成回退也必须受开发环境开关保护，生产发布包不能静默离线生成。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、生产发布资料表检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、生产发布资料表检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/Android release 签名配置/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:compliance-copy` 会扫描隐私政策、用户协议、AI 免责声明、设置页入口和合规页面路由，防止 MVP 关键合规文案被误删。
 

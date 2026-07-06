@@ -13,6 +13,7 @@
     "build": "npm run build -w apps/mobile",
     "build:mobile": "npm run build -w apps/mobile",
     "build:server": "npm run build -w apps/server",
+    "check:android-release-config": "npm run check:android-release-config -w apps/mobile",
     "check:auth-providers": "npm run check:auth-providers -w apps/server",
     "check:ai-templates": "npm run check:ai-templates -w apps/server",
     "check:mvp": "node scripts/check-mvp.mjs",
