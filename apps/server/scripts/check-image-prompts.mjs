@@ -83,4 +83,22 @@ for (const fragment of requiredFragments) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Verify front-end mock source files also use the shared appendImagePromptRequirements
+// instead of inline prompt strings, preventing front-end mock prompt divergence.
+// ---------------------------------------------------------------------------
+const frontendMockFiles = [
+  join(repoRoot, 'apps/mobile/src/mocks/memoryMock.ts'),
+  join(repoRoot, 'apps/mobile/src/mocks/wordMock.ts'),
+]
+for (const filePath of frontendMockFiles) {
+  if (!existsSync(filePath)) {
+    throw new Error(`Missing front-end mock source: ${filePath}`)
+  }
+  const source = readFileSync(filePath, 'utf8')
+  if (!source.includes('appendImagePromptRequirements')) {
+    throw new Error(`${filePath} must import and use appendImagePromptRequirements from @memory-palace/prompts`)
+  }
+}
+
 console.log('image-prompts: all mock and shared image prompts include required no-text/no-symbol constraints')

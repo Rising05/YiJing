@@ -1,12 +1,16 @@
-import { getTemplate } from '../templates/memoryTemplates'
-import type { WordCardRequest, WordCardResult } from '../types'
-import { anchorPosition } from '../utils/anchor'
+import { appendImagePromptRequirements } from '@memory-palace/prompts'
+import { TEMPLATE_MAP } from '@memory-palace/shared'
+import type { MemoryTemplate, WordCardRequest, WordCardResult } from '../types'
 
 const partOfSpeech = ['n.', 'v.', 'adj.', 'phr.']
 
+function getWordTemplate(templateId: string): MemoryTemplate {
+  return TEMPLATE_MAP[templateId] ?? TEMPLATE_MAP.blank_word_card_30
+}
+
 export function createMockWordResult(request: WordCardRequest): WordCardResult {
   const templateId = request.cardMode === 'simple' || request.words.length > 15 ? 'blank_word_card_30' : 'airport_15'
-  const template = getTemplate(templateId)
+  const template = getWordTemplate(templateId)
   const now = new Date()
   return {
     id: `word-${now.getTime()}`,
@@ -29,10 +33,14 @@ export function createMockWordResult(request: WordCardRequest): WordCardResult {
         visualObject: isPhrase ? `${word} 场景` : `${word} 对应物体`,
         memoryHint: `把 ${word} 放在${anchor.name}，用位置帮助回忆词性和拼写。`,
         anchorKey: anchor.key,
-        position: anchorPosition(template.anchors, anchor.key),
+        position: { x: anchor.x, y: anchor.y },
       }
     }),
-    imagePrompt: `${template.scenePrompt}; no text, no numbers, no labels, no watermark, no UI elements`,
+    imagePrompt: appendImagePromptRequirements(
+      request.cardMode === 'simple'
+        ? 'clean blank vocabulary information card background, soft grid layout, generous whitespace'
+        : template.scenePrompt,
+    ),
     watermarkText: '忆境 MemoryPalace',
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),

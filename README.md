@@ -127,6 +127,10 @@ npm run build:mobile
 - `npm run check:frontend-secrets` 会扫描移动端源码、Vite/Capacitor 配置和前端 `.env*`，防止 LLM、通义万相、OSS/S3、JWT 等密钥被放进前端包。
 - `npm run check:mobile-layout` 会检查移动端 safe area、44px 以上按钮触控高度、底部导航触控高度，以及 Liquid Glass 内容层/动效层/首页标注内容层布局约束。
 - 移动端发布构建必须配置 `VITE_API_BASE_URL`，开发环境未配置时才会 fallback 到 `http://localhost:3000/api`；生产缺失时 API client 会返回明确的 `API_BASE_URL_MISSING` 错误。
+- 前端模板直接复用 `@memory-palace/shared` 的 10 个 canonical 模板，不再维护独立副本，确保前端 mock 生成的 `anchorKey` 与后端 LLM/anchorKey 校验一致。
+- 前端文本 mock 记忆点数量遵循 SPEC §7.2 三层规则（1-120 字 3-5 点、121-280 字 5-8 点、281-500 字 8-12 点），模板选择支持 scenePreference 感知和容量匹配，与后端 mock 行为对齐。
+- 前端文本/单词 mock 的 `imagePrompt` 复用 `@memory-palace/prompts` 的 `appendImagePromptRequirements`，自动包含 no-text/no-symbol 中英文硬性禁令。
+- `npm run check:image-prompts` 会验证后端 mock、共享生图 prompt 和前端 mock 源码都使用共享 prompt 函数，防止前端 mock prompt 退化。
 
 ## 后端运行
 
@@ -422,7 +426,7 @@ npm run smoke:ui
 
 `npm run check:android-release-config` 会检查 Android release 签名模板、Gradle `keystore.properties` 接线、`.gitignore` 防提交规则，并扫描仓库树中是否误放了真实 `*.jks`、`*.keystore` 或 `keystore.properties`。
 
-`npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt` 和共享真实生图 prompt 均包含 no-text/no-symbol 中英文硬性要求。
+`npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt`、共享真实生图 prompt 和前端 mock 源码均包含 no-text/no-symbol 中英文硬性要求，且前端 mock 使用共享 `appendImagePromptRequirements` 函数。
 
 `npm run check:mobile-layout` 会检查 `GlassButton`、底部导航、页面壳、登录弹窗和 Liquid Glass 卡片的关键移动端布局约束，覆盖 SPEC 技术验收中的按钮触控高度和 safe area 基线。
 

@@ -2,7 +2,7 @@
 
 版本：v0.1  
 状态：需求访谈初稿  
-最后更新：2026-07-03  
+最后更新：2026-07-06  
 目标项目目录：`/Users/rising/Desktop/YiJing`
 
 ## 1. 项目摘要
@@ -197,6 +197,7 @@
 | 导出与分享失败反馈 | Agent-Frontend | Done | 导出 PNG 和分享/保存按钮新增 `onError` 回调，结果页将导出渲染、下载或 Web Share 失败映射为统一 `EXPORT_FAILED` 用户文案；开始新导出/分享时清除旧错误，避免导出失败静默无反馈 | `apps/mobile/src/components/ExportImageButton.tsx`, `apps/mobile/src/components/ShareImageButton.tsx`, `apps/mobile/src/pages/GenerateResultPage.tsx`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 登录状态持久化收窄 | Agent-Frontend/Privacy | Done | `authStore` 持久化范围收窄为必要的 `user` 和 `token`，不再跨刷新保存登录弹窗开关或待执行动作；退出登录时同步清理弹窗状态和 pending action，降低 UI 临时状态残留风险 | `apps/mobile/src/stores/authStore.ts`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 删除账号后旧 Token 失效 | Agent-Backend/QA | Done | `JwtAuthGuard` 在校验 JWT 签名后继续确认用户仍存在且 `deletedAt` 为空；删除账号后旧 token 调用受保护接口会稳定返回 `UNAUTHORIZED`，避免已删除账号继续访问或触发下游外键错误；后端 smoke 增加删除账号后旧 token 被拒绝断言 | `apps/server/src/modules/auth/jwt-auth.guard.ts`, `apps/server/scripts/smoke-api.mjs`, `README.md`, `SPEC.md` | `npm run build:server`; `node --check apps/server/scripts/smoke-api.mjs`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
+| 前端模板统一与 Mock 对齐 | Agent-Frontend/AI | Done | 前端模板从独立维护的 `a1/a2` 旧锚点副本改为直接复用 `@memory-palace/shared` 的 10 个 canonical 模板，消除前端与后端 LLM/anchorKey 校验的模板分叉；前端文本 mock 记忆点数量从简单公式 `ceil(length/60)` 修正为 SPEC §7.2 三层规则（1-120 字 3-5 点、121-280 字 5-8 点、281-500 字 8-12 点），模板选择从仅 `study_room_9`/`ancient_cottage_9` 二选一扩展为与后端一致的 scenePreference 感知 + 容量匹配逻辑；前端文本/单词 mock 的 `imagePrompt` 从内联简单字符串改为复用 `@memory-palace/prompts` 的 `appendImagePromptRequirements`，自动包含 no-text/no-symbol 中英文硬性禁令；`check:image-prompts` 扩展为静态验证前端 mock 源码也使用共享 prompt 函数，防止前端 mock prompt 退化 | `apps/mobile/src/templates/memoryTemplates.ts`, `apps/mobile/src/mocks/memoryMock.ts`, `apps/mobile/src/mocks/wordMock.ts`, `apps/mobile/package.json`, `packages/prompts/src/index.ts`, `apps/server/scripts/check-image-prompts.mjs`, `README.md`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run check:mvp`; `npm run check:image-prompts`; `npm run check:ai-templates`; `git diff --check` | 2026-07-06 |
 
 追加记录模板：
 
@@ -226,9 +227,9 @@ Notes:
 | 微信开放平台应用未配置 | 微信登录 | 用户/Agent-Backend | Open | MVP 只预留 |
 | 正式 App 名称未确认 | iOS 发布、品牌资产 | 用户/Agent-Release | Open | 当前使用暂定名 |
 | Docker daemon 未运行 | Phase 2 MySQL migrate | 用户/Agent-Backend | Resolved | ✅ Docker 已启动，MySQL 容器正常运行，migrate 已完成 |
-| CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Open | `cap add ios` 报错：CocoaPods is not installed |
-| 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Open | `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode |
-| Java/Android SDK 未配置 | Android APK/AAB 构建 | 用户/Agent-Release | Open | `java -version` 报错且 `ANDROID_HOME` 为空；Android 工程与 release 签名模板/门禁已完成，但无法在本机构建 APK/AAB |
+| CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Open | `cap add ios` 报错：CocoaPods is not installed；尝试 `brew install cocoapods` 但因 brew 镜像 SSL/404 网络错误失败 |
+| 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Open | `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode；需用户从 App Store 下载安装 |
+| Java/Android SDK 未配置 | Android APK/AAB 构建 | 用户/Agent-Release | Open | `java -version` 报错且 `ANDROID_HOME` 为空；尝试 `brew install --cask temurin@17` 但因 brew 镜像网络错误失败；Android 工程与 release 签名模板/门禁已完成，但无法在本机构建 APK/AAB |
 
 ### 4.4 决策记录
 
