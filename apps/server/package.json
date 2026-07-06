@@ -20,6 +20,7 @@
     "check:production-redaction": "node scripts/check-production-redaction.mjs",
     "cleanup:expired-images": "node scripts/cleanup-expired-images.mjs",
     "smoke:api": "node scripts/smoke-api.mjs",
+    "smoke:live-ai": "node scripts/smoke-live-ai.mjs",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"

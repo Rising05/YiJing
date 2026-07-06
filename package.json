@@ -39,6 +39,7 @@
     "prisma:validate": "npm run prisma:validate -w apps/server",
     "prisma:migrate": "npm run prisma:migrate -w apps/server",
     "smoke:api": "npm run smoke:api -w apps/server",
+    "smoke:live-ai": "npm run smoke:live-ai -w apps/server",
     "smoke:ui": "npm run smoke:ui -w apps/mobile",
     "preview": "npm run preview -w apps/mobile"
   }

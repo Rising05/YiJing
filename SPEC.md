@@ -96,8 +96,8 @@
 | SPEC 文档 | Done | Agent-Product | 2026-07-03 | 需求访谈结论已整理 |
 | Phase 1 前端 Mock 闭环 | Ready for QA | Agent-Frontend | 2026-07-03 | `npm install --cache .npm-cache`、`npm run build`、`npm run dev`、`curl -I http://localhost:5173/` 均通过 |
 | Phase 2 后端 Mock + MySQL | Ready for QA | Agent-Backend/QA | 2026-07-06 | MySQL migrate 完成，全部 22 项 smoke test 通过（health/unauthorized/invalid login/formal auth placeholders/login/login quota restore/input validation/content safety/text-memory/word-card/regenerate/history/detail/favorite/delete history/quota exhausted/delete account/deleted token rejection） |
-| Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-05 | OpenAI-compatible LLM client、prompt 包、JSON 解析 + schema/anchor 校验重试已实现；真实调用待 API Key 验证 |
-| Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI/Backend | 2026-07-05 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象、本地/OSS/S3-compatible provider、共享生图 prompt 禁令和静态检查已实现；真实万相和真实对象存储调用待 API Key/账号验证 |
+| Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-06 | OpenAI-compatible LLM client、prompt 包、JSON 解析 + schema/anchor 校验重试已实现；真实调用 live smoke 入口已提供，待 API Key 验证 |
+| Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI/Backend | 2026-07-06 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象、本地/OSS/S3-compatible provider、共享生图 prompt 禁令和静态检查已实现；真实万相 live smoke 入口已提供，真实 Key/账号待验证 |
 | Phase 5 iOS 打包 | In Progress | Agent-Release | 2026-07-05 | Capacitor iOS/Android 依赖、脚本、配置、占位图标/启动页和发布元数据静态检查已完成；`cap add ios` 因 CocoaPods/完整 Xcode 缺失阻塞 |
 | QA 回归验收 | Done | Agent-QA | 2026-07-06 | 静态检查通过；后端 API smoke 22 项通过；前端 Chrome headless UI smoke 通过 |
 
@@ -168,6 +168,7 @@
 | MVP 内容安全规则增强 | Agent-Backend/Compliance | Done | 将生成接口内容安全从简单正则扩展为分类规则表，覆盖色情低俗、血腥暴力、自伤自杀、违法犯罪、宗教/政治符号和中国大陆合规风险；新增 `check:content-safety` 构建后验证脚本，确保统一返回 `CONTENT_BLOCKED` | `apps/server/src/modules/generation/content-safety.ts`, `apps/server/scripts/check-content-safety.mjs`, `apps/server/package.json`, `package.json`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run check:content-safety` | 2026-07-04 |
 | 后端 AI 模板统一 | Agent-AI/Backend | Done | 后端 LLM prompt 和 schema/anchor 校验改为复用 `packages/shared` 的 10 个 canonical templates，替换原先独立维护的 5 模板列表，避免真实 LLM 模式与 SPEC 模板系统分叉；新增 `check:ai-templates` 构建后验证脚本 | `apps/server/src/modules/ai/memory-templates.ts`, `apps/server/scripts/check-ai-templates.mjs`, `apps/server/package.json`, `package.json`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run check:ai-templates`; `npm run check:content-safety`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-04 |
 | LLM 结构校验重试闭环 | Agent-AI/QA | Done | 将真实 LLM 模式下的 JSON 解析、字段完整性、模板容量和 `anchorKey` 校验纳入同一个重试闭环；新增 `check:ai-retry`，模拟第一次返回合法 JSON 但非法 anchor、第二次返回有效结果，防止只重试解析错误而不重试结构错误 | `apps/server/src/modules/ai/ai.service.ts`, `apps/server/scripts/check-ai-retry.mjs`, `apps/server/package.json`, `package.json`, `scripts/check-mvp.mjs`, `README.md`, `SPEC.md` | `node --check apps/server/scripts/check-ai-retry.mjs`; `npm run build:server`; `npm run check:ai-retry`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
+| 真实 AI/生图 Live Smoke 入口 | Agent-AI/Backend/QA | Done | 新增 `smoke:live-ai`，默认跳过以避免误耗费真实模型或图片额度；设置 `LIVE_AI_SMOKE=true`、`AI_MOCK_MODE=false` 和 `LLM_API_KEY` 后，会通过后端 API 测试登录并生成一条文本记忆宫殿，再查询数据库确认 `openai-compatible` usage log；若 `IMAGE_MOCK_MODE=false` 且配置 `WANX_API_KEY`，会要求返回真实 `backgroundImageUrl` 并确认 `wanx` usage log；`LIVE_AI_SMOKE_FULL=true` 可额外验证单词卡片真实链路 | `apps/server/scripts/smoke-live-ai.mjs`, `apps/server/package.json`, `package.json`, `README.md`, `docs/release/MAINLAND_RELEASE_CHECKLIST.md`, `scripts/check-mainland-release-checklist.mjs`, `SPEC.md` | `node --check apps/server/scripts/smoke-live-ai.mjs`; `npm run smoke:live-ai`; `npm run check:mainland-release`; `npm run check:mvp`; `git diff --check` | 2026-07-06 |
 | 生产环境 Prompt 与原始 JSON 脱敏 | Agent-Backend/Compliance | Done | 生成记录保存时开发环境继续保留完整 `promptUsed` 便于调试，生产环境改为保存 `[redacted:<hash>]` 标记；`AiUsageLog.rawPrompt` 和 `rawResponse` 统一通过 helper 在生产环境清空，避免保存完整 prompt 或模型原始 JSON；新增 `check:production-redaction` 并纳入 `check:mvp`，防止后续回退为直接持久化 | `apps/server/src/modules/generation/generation.service.ts`, `apps/server/scripts/check-production-redaction.mjs`, `apps/server/package.json`, `package.json`, `scripts/check-mvp.mjs`, `README.md`, `SPEC.md` | `npm run build:server`; `npm run check:production-redaction`; `npm run check:mvp`; `git diff --check` | 2026-07-05 |
 | 图片生命周期清理 | Agent-Backend/Storage | Done | 新增 `StorageService.deleteImage()` 删除入口；历史单条删除和账号删除会处理关联背景图；新增 `cleanup:expired-images` 脚本，扫描过期背景图并清空记录摘要和结果 JSON 中的 `backgroundImageUrl`，保留历史记录本身 | `apps/server/src/modules/image/storage.service.ts`, `apps/server/src/modules/image/image.module.ts`, `apps/server/src/modules/history/**`, `apps/server/src/modules/user/**`, `apps/server/scripts/cleanup-expired-images.mjs`, `apps/server/package.json`, `package.json`, `README.md`, `SPEC.md` | `npm run build:server`; `node --check apps/server/scripts/cleanup-expired-images.mjs`; `npm run cleanup:expired-images -w apps/server -- --dry-run`; `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`; `npm run prisma:validate`; `npm run smoke:api` | 2026-07-04 |
 | 前端主流程 Smoke Test | Agent-QA/Frontend | Done | 新增 Chrome headless UI smoke 脚本，使用稳定 `data-testid` 覆盖首页、文本入口、未登录登录弹窗、测试登录、文本结果页、单词入口、单词超限错误提示和单词结果页；并断言首页 Liquid Glass 卡片无水平溢出、无左右裁切、圆角继承正常，补齐 QA 回归验收中缺少的前端自动化主流程证据 | `apps/mobile/scripts/smoke-ui.mjs`, `apps/mobile/src/pages/HomePage.tsx`, `apps/mobile/src/pages/TextMemoryPage.tsx`, `apps/mobile/src/pages/WordCardPage.tsx`, `apps/mobile/src/pages/GenerateResultPage.tsx`, `apps/mobile/src/components/AuthModal.tsx`, `apps/mobile/package.json`, `package.json`, `README.md`, `SPEC.md` | `node --check apps/mobile/scripts/smoke-ui.mjs`; `npm run build:mobile`; `UI_BASE_URL=http://127.0.0.1:5173 npm run smoke:ui` | 2026-07-04 |
@@ -326,7 +327,7 @@ Progress Log:
 
 | Status | Owner | 更新时间 | 证据/备注 |
 | --- | --- | --- | --- |
-| In Progress | Agent-AI | 2026-07-05 | LLM 接入代码、prompt、JSON 解析 + schema/anchor 校验重试链路已完成；真实 API 调用需配置 `LLM_API_KEY` 后验证 |
+| In Progress | Agent-AI | 2026-07-06 | LLM 接入代码、prompt、JSON 解析 + schema/anchor 校验重试链路已完成；`smoke:live-ai` 已提供真实 API 调用验证入口，需配置 `LLM_API_KEY` 后执行 |
 
 ### Phase 4：通义万相 + 图片存储
 
@@ -346,7 +347,7 @@ Progress Log:
 
 | Status | Owner | 更新时间 | 证据/备注 |
 | --- | --- | --- | --- |
-| In Progress | Agent-AI/Backend | 2026-07-05 | 通义万相调用入口、存储抽象、本地/OSS/S3-compatible provider、共享生图 prompt 禁令和 `check:image-prompts` 已完成；真实生图和真实对象存储需配置 Key/账号后验证 |
+| In Progress | Agent-AI/Backend | 2026-07-06 | 通义万相调用入口、存储抽象、本地/OSS/S3-compatible provider、共享生图 prompt 禁令和 `check:image-prompts` 已完成；`smoke:live-ai` 已提供真实生图验证入口，需配置 Key/对象存储账号后执行 |
 
 ### Phase 5：iOS 优先打包
 

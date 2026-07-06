@@ -405,6 +405,7 @@ npm run check:release-env
 npm run check:tracking-sdk
 npm run cleanup:expired-images
 npm run smoke:api
+npm run smoke:live-ai
 npm run smoke:ui
 ```
 
@@ -453,6 +454,8 @@ npm run smoke:ui
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
 
 `npm run smoke:api` 会验证后端主流程和关键错误码：健康检查、未登录生成拦截、错误验证码登录拦截、正式短信/微信登录未配置拦截、测试登录、测试登录补齐额度、文本超长、单词超限、内容安全拦截、文本生成、单词生成、重新生成、历史列表、详情、收藏、删除历史、额度耗尽拒绝、删除账号和删除账号后旧 token 拒绝；同时断言四次成功生成后的额度精确变为 `19/1`、`18/2`、`17/3`、`16/4`。运行前需要先启动 MySQL 并完成 Prisma migrate，然后启动后端服务。
+
+`npm run smoke:live-ai` 是真实 AI/生图联调入口，默认会跳过以避免误耗费真实模型或图片额度。启动 MySQL、migrate 和后端服务后，配置 `AI_MOCK_MODE=false`、`LLM_API_KEY`，再设置 `LIVE_AI_SMOKE=true npm run smoke:live-ai` 可通过后端 API 生成一条文本记忆宫殿，并查询数据库 usage log 确认 `openai-compatible` 调用成功。若还配置 `IMAGE_MOCK_MODE=false` 和 `WANX_API_KEY`，脚本会要求返回真实 `backgroundImageUrl` 并确认 `wanx` usage log；如需同时验证单词卡片，增加 `LIVE_AI_SMOKE_FULL=true`。
 
 `npm run smoke:ui` 使用本机 Chrome headless 跑前端主流程：首页、文本生成入口、未登录弹窗、测试账号登录、结果页、导出比例切换、水印和 PNG 下载触发、单词生成入口、单词超限错误提示、单词结果页、历史列表、历史详情、收藏状态同步、单条历史删除确认、清除缓存和删除账号。运行前需要先启动移动端 dev server，例如：`npm run dev -w apps/mobile -- --host 127.0.0.1`，如需指定地址可设置 `UI_BASE_URL=http://127.0.0.1:5173`。
 

@@ -75,6 +75,7 @@ function checkChecklist() {
     'iOS 工程',
     'npm run check:mvp',
     'npm run smoke:api',
+    'npm run smoke:live-ai',
     'npm run smoke:ui',
     'npm run check:release-env -w apps/mobile -- --strict',
   ], 'docs/release/MAINLAND_RELEASE_CHECKLIST.md must keep the release handoff checklist complete')

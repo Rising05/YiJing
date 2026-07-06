@@ -42,9 +42,9 @@
 | 项目 | 状态 | Owner | 证据/下一步 |
 | --- | --- | --- | --- |
 | LLM 接入代码 | In Progress | Agent-AI | OpenAI-compatible client、prompt、schema/anchor 校验和重试已完成 |
-| 真实 LLM Key 验证 | Open | 用户/Agent-AI | 配置 `LLM_API_KEY` 后验证真实 JSON 生成 |
+| 真实 LLM Key 验证 | Open | 用户/Agent-AI | 配置 `LLM_API_KEY` 后运行 `LIVE_AI_SMOKE=true npm run smoke:live-ai` 验证真实 JSON 生成和 usage log |
 | 通义万相接入代码 | In Progress | Agent-AI/Backend | HTTP 同步调用入口、prompt 禁令、mock 和存储抽象已完成 |
-| 真实通义万相验证 | Open | 用户/Agent-AI | 配置 `WANX_API_KEY` 后验证真实生图 |
+| 真实通义万相验证 | Open | 用户/Agent-AI | 配置 `IMAGE_MOCK_MODE=false` 与 `WANX_API_KEY` 后运行 `LIVE_AI_SMOKE=true npm run smoke:live-ai` 验证真实生图和 usage log |
 | 对象存储最终供应商 | Open | 用户/Agent-Backend | 需确认 OSS 或 S3-compatible 账号、公开域名和删除策略 |
 | 生产脱敏 | Done | Agent-Backend/Compliance | `check:production-redaction` 防止生产保存完整 prompt 或原始响应 |
 
@@ -76,8 +76,9 @@
 ```bash
 npm run check:mvp
 npm run smoke:api
+npm run smoke:live-ai
 npm run smoke:ui
 npm run check:release-env -w apps/mobile -- --strict
 ```
 
-`check:mvp` 是静态门禁；`smoke:api` 需要 MySQL、migrate 和后端服务；`smoke:ui` 需要前端 dev server；`check:release-env --strict` 需要真实本机 Android/iOS 打包环境。
+`check:mvp` 是静态门禁；`smoke:api` 需要 MySQL、migrate 和后端服务；`smoke:live-ai` 需要真实 AI Key、后端服务和显式 `LIVE_AI_SMOKE=true`；`smoke:ui` 需要前端 dev server；`check:release-env --strict` 需要真实本机 Android/iOS 打包环境。
