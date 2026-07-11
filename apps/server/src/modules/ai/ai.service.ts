@@ -135,29 +135,42 @@ export class AiService {
   }
 
   private async callChatCompletion(prompt: string) {
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content: '你必须输出严格 JSON 对象，不要输出 Markdown、解释性文字或代码块。',
-          },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.4,
-        response_format: { type: 'json_object' },
-      }),
-    })
+    let response: Response
+    try {
+      response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content: '你必须输出严格 JSON 对象，不要输出 Markdown、解释性文字或代码块。',
+            },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.4,
+          response_format: { type: 'json_object' },
+        }),
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+      })
+    } catch (error) {
+      const timedOut = error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name)
+      throw new BadGatewayException({
+        code: 'LLM_REQUEST_FAILED',
+        message: timedOut ? 'LLM 请求超时，请稍后重试' : 'LLM 请求失败，请稍后重试',
+      })
+    }
     if (!response.ok) {
       throw new BadGatewayException({ code: 'LLM_REQUEST_FAILED', message: `LLM 请求失败：${response.status}` })
     }
-    const body = (await response.json()) as ChatCompletionResponse
+    const body = (await response.json().catch(() => null)) as ChatCompletionResponse | null
+    if (!body) {
+      throw new BadGatewayException({ code: 'LLM_REQUEST_FAILED', message: 'LLM 响应格式错误' })
+    }
     const content = body.choices?.[0]?.message?.content
     if (!content) {
       throw new BadGatewayException({ code: 'LLM_EMPTY_RESPONSE', message: 'LLM 返回为空' })
@@ -179,5 +192,10 @@ export class AiService {
 
   private get model() {
     return this.config.get<string>('LLM_MODEL') ?? 'deepseek-chat'
+  }
+
+  private get requestTimeoutMs() {
+    const configured = Number(this.config.get<string>('LLM_REQUEST_TIMEOUT_MS') ?? 30000)
+    return Number.isInteger(configured) && configured > 0 ? configured : 30000
   }
 }

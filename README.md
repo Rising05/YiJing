@@ -230,6 +230,7 @@ LLM_BASE_URL="https://api.deepseek.com/v1"
 LLM_API_KEY="your-api-key"
 LLM_MODEL="deepseek-chat"
 LLM_JSON_RETRY_COUNT=1
+LLM_REQUEST_TIMEOUT_MS=30000
 ```
 
 要求：
@@ -239,6 +240,7 @@ LLM_JSON_RETRY_COUNT=1
 - LLM 必须输出严格 JSON。
 - JSON 解析失败、字段缺失、模板容量或 `anchorKey` 校验失败会按配置重试。
 - 后端会校验 `anchorKey`、模板容量、字段完整性。
+- LLM HTTP 请求默认 30 秒超时；网络失败和超时统一返回 `LLM_REQUEST_FAILED`。
 
 ## 接入通义万相
 
@@ -250,6 +252,7 @@ WANX_BASE_URL="https://dashscope.aliyuncs.com"
 WANX_API_KEY="your-dashscope-api-key"
 WANX_MODEL="wan2.6-t2i"
 WANX_SIZE="960*1696"
+WANX_REQUEST_TIMEOUT_MS=120000
 ```
 
 当前实现：
@@ -259,6 +262,7 @@ WANX_SIZE="960*1696"
 - 强制 `watermark:false`。
 - negative prompt 禁止文字、数字、标签、水印、UI、宗教符号、政治符号。
 - 真实生图 prompt 和后端 mock 保存的 `imagePrompt` 共用同一套中英文硬性禁令，可用 `npm run check:image-prompts` 验证。
+- 万相 HTTP 请求默认 120 秒超时；网络失败和超时统一返回 `IMAGE_GENERATION_FAILED`。
 
 ## 图片存储
 
@@ -389,6 +393,7 @@ npm run build:ios:simulator
 npm run build:mobile
 npm run build:server
 npm run check:auth-providers
+npm run check:ai-http-contract
 npm run check:mvp
 npm run prisma:validate
 npm run dev:mobile
@@ -425,6 +430,8 @@ npm run smoke:ui
 
 `npm run check:ai-retry` 需要先执行 `npm run build:server`，用于模拟真实 LLM 模式下第一次返回合法 JSON 但非法 `anchorKey`、第二次返回有效结构，确保解析和 schema/anchor 校验处于同一个重试闭环。
 
+`npm run check:ai-http-contract` 需要先执行 `npm run build:server`，会启动仅监听本机的临时 HTTP 服务，验证 OpenAI-compatible LLM 与通义万相的真实请求路径、Bearer 鉴权、JSON 请求体、响应解析、上游错误、空响应、网络失败和超时映射；不会调用真实 API 或消耗额度。
+
 `npm run check:android-release-config` 会检查 Android release 签名模板、Gradle `keystore.properties` 接线、`.gitignore` 防提交规则，并扫描仓库树中是否误放了真实 `*.jks`、`*.keystore` 或 `keystore.properties`。
 
 `npm run check:image-prompts` 需要先执行 `npm run build:server`，用于验证后端文本、单词、简洁词卡 mock 保存的 `imagePrompt`、共享真实生图 prompt 和前端 mock 源码均包含 no-text/no-symbol 中英文硬性要求，且前端 mock 使用共享 `appendImagePromptRequirements` 函数。
@@ -433,7 +440,7 @@ npm run smoke:ui
 
 `npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`；本地 mock 登录、生成和重新生成回退也必须受开发环境开关保护，生产发布包不能静默离线生成。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、生产发布资料表检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/Android release 签名配置/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI HTTP 契约/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、生产发布资料表检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/Android release 签名配置/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:compliance-copy` 会扫描隐私政策、用户协议、AI 免责声明、设置页入口和合规页面路由，防止 MVP 关键合规文案被误删。
 

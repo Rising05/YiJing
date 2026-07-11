@@ -14,6 +14,7 @@ const steps = [
   ['check:error-codes', ['run', 'check:error-codes']],
   ['check:content-safety', ['run', 'check:content-safety']],
   ['check:ai-templates', ['run', 'check:ai-templates']],
+  ['check:ai-http-contract', ['run', 'check:ai-http-contract']],
   ['check:ai-retry', ['run', 'check:ai-retry']],
   ['check:image-prompts', ['run', 'check:image-prompts']],
   ['check:image-storage', ['run', 'check:image-storage']],

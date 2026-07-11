@@ -69,31 +69,41 @@ export class ImageService {
   }
 
   private async callWanx(input: GenerateImageInput) {
-    const response = await fetch(`${this.baseUrl}/api/v1/services/aigc/multimodal-generation/generation`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        input: {
-          messages: [
-            {
-              role: 'user',
-              content: [{ text: input.prompt }],
-            },
-          ],
+    let response: Response
+    try {
+      response = await fetch(`${this.baseUrl}/api/v1/services/aigc/multimodal-generation/generation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        parameters: {
-          prompt_extend: true,
-          watermark: false,
-          n: 1,
-          negative_prompt: negativePrompt,
-          size: input.size ?? this.size,
-        },
-      }),
-    })
+        body: JSON.stringify({
+          model: this.model,
+          input: {
+            messages: [
+              {
+                role: 'user',
+                content: [{ text: input.prompt }],
+              },
+            ],
+          },
+          parameters: {
+            prompt_extend: true,
+            watermark: false,
+            n: 1,
+            negative_prompt: negativePrompt,
+            size: input.size ?? this.size,
+          },
+        }),
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+      })
+    } catch (error) {
+      const timedOut = error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name)
+      throw new BadGatewayException({
+        code: 'IMAGE_GENERATION_FAILED',
+        message: timedOut ? '通义万相请求超时，请稍后重试' : '通义万相请求失败，请稍后重试',
+      })
+    }
 
     const body = (await response.json().catch(() => null)) as WanxResponse | null
     if (!response.ok) {
@@ -126,5 +136,10 @@ export class ImageService {
 
   private get size() {
     return this.config.get<string>('WANX_SIZE') ?? '960*1696'
+  }
+
+  private get requestTimeoutMs() {
+    const configured = Number(this.config.get<string>('WANX_REQUEST_TIMEOUT_MS') ?? 120000)
+    return Number.isInteger(configured) && configured > 0 ? configured : 120000
   }
 }

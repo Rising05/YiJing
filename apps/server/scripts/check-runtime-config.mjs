@@ -97,6 +97,11 @@ function checkFormalAuth() {
 }
 
 function checkLlm() {
+  const requestTimeoutMs = Number(env.LLM_REQUEST_TIMEOUT_MS ?? 30000)
+  if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 1000 || requestTimeoutMs > 300000) {
+    error('LLM_REQUEST_TIMEOUT_MS should be an integer from 1000 to 300000')
+  }
+
   const mock = flag('AI_MOCK_MODE', true)
   if (mock) {
     if (productionMode) {
@@ -121,6 +126,11 @@ function checkLlm() {
 }
 
 function checkImage() {
+  const requestTimeoutMs = Number(env.WANX_REQUEST_TIMEOUT_MS ?? 120000)
+  if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 5000 || requestTimeoutMs > 600000) {
+    error('WANX_REQUEST_TIMEOUT_MS should be an integer from 5000 to 600000')
+  }
+
   const mock = flag('IMAGE_MOCK_MODE', true)
   if (mock) {
     if (productionMode) {
