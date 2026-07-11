@@ -80,6 +80,8 @@ function checkChecklist() {
     'npm run smoke:live-ai',
     'npm run smoke:ui',
     'npm run check:release-env -w apps/mobile -- --strict',
+    'npm run build:android:debug',
+    'npm run build:android:release',
     'npm run build:ios:simulator',
   ], 'docs/release/MAINLAND_RELEASE_CHECKLIST.md must keep the release handoff checklist complete')
 }
@@ -102,6 +104,12 @@ function checkPackageScript() {
   }
   if (files.packageJson.scripts?.['build:ios:simulator'] !== 'npm run build:ios:simulator -w apps/mobile') {
     errors.push('package.json must expose build:ios:simulator')
+  }
+  if (files.packageJson.scripts?.['build:android:debug'] !== 'npm run build:android:debug -w apps/mobile') {
+    errors.push('package.json must expose build:android:debug')
+  }
+  if (files.packageJson.scripts?.['build:android:release'] !== 'npm run build:android:release -w apps/mobile') {
+    errors.push('package.json must expose build:android:release')
   }
 }
 

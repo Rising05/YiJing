@@ -338,15 +338,15 @@ open apps/mobile/ios/App/App.xcworkspace
 
 ## Android 打包
 
-Android Capacitor 工程已生成在 `apps/mobile/android/`。本机仍需要 Android Studio、Android SDK 和 Java JDK 才能构建 APK/AAB。
+Android Capacitor 工程已生成在 `apps/mobile/android/`。当前机器已配置 OpenJDK 21 与 Android SDK，并已完成 Debug APK、未签名 Release APK 和未签名 Release AAB 构建验证。
 
 ```bash
-npm run build:mobile
-npm run cap:sync:android -w apps/mobile
+npm run build:android:debug
+npm run build:android:release
 open -a "Android Studio" apps/mobile/android
 ```
 
-详见 `apps/mobile/ANDROID_SETUP.md`。Android AAB 输出会在 Android Studio/JDK 环境可用后继续配置。
+详见 `apps/mobile/ANDROID_SETUP.md`。Debug APK 使用 Android Debug 签名；Release APK/AAB 在未配置 `keystore.properties` 时保持未签名，不能直接上架。
 
 当前 Android launcher 图标已生成到 `apps/mobile/android/app/src/main/res/mipmap-*`，源图保存在 `apps/mobile/src/assets/logo.png`。
 
@@ -383,6 +383,8 @@ Android release 签名已预留 `apps/mobile/android/keystore.properties.example
 
 ```bash
 npm run build
+npm run build:android:debug
+npm run build:android:release
 npm run build:ios:simulator
 npm run build:mobile
 npm run build:server
@@ -465,6 +467,8 @@ npm run smoke:ui
 
 `npm run check:release-env` 会检查本机原生打包环境，包括 Node/npm、Capacitor 配置、Android 工程、Java、Android SDK、iOS 工程、Xcode 和 CocoaPods。默认只报告阻塞项并返回成功；需要作为发布门禁时可运行 `npm run check:release-env -w apps/mobile -- --strict`。
 
+`npm run build:android:debug` 会构建移动端 Web 包、同步 Capacitor Android 并输出 Android Debug 签名 APK；`npm run build:android:release` 会生成 Release APK/AAB，未配置本地 `keystore.properties` 时产物保持未签名，仅用于编译与打包验收。
+
 `npm run build:ios:simulator` 会先构建移动端 Web 包并执行 `cap sync ios`，再通过 Xcode workspace 生成无签名 iOS Simulator Debug App；它用于工程和原生插件回归，不替代真机签名或 App Store Archive。
 
 `npm run check:tracking-sdk` 会扫描移动端 `package.json`、root `package-lock.json`、Android manifest/Gradle 文件和 iOS Info.plist/Podfile，发现广告、归因、统计追踪、ATT 或 SKAdNetwork 相关依赖和配置时失败，支撑 MVP “无广告 SDK / 无无关追踪 SDK”验收。
@@ -484,6 +488,6 @@ npm run smoke:ui
 - 配置真实 OSS 或 S3-compatible 对象存储账号后验证上传、公开 URL 访问和删除闭环。
 - 确认正式云厂商、公网域名、HTTPS 证书，并将 `deploy/nginx/yijing.conf.example` 替换为线上 Nginx 或负载均衡配置。
 - 配置 Apple Developer Team 与正式签名后完成 iOS 真机、Archive 和 App Store 上架验证。
-- Android AAB/APK 打包。
+- 配置正式 Android keystore 后完成签名 APK/AAB、安装和应用市场上架验证。
 - 正式登录：手机号短信 + 微信移动 App 登录。
 - 正式合规文案与备案信息。

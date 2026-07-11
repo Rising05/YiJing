@@ -70,7 +70,7 @@
 | --- | --- | --- | --- |
 | Android 工程 | Done | Agent-Release | `apps/mobile/android` 已生成 |
 | Android release 签名配置 | Ready for QA | Agent-Release/QA | `keystore.properties.example`、Gradle 可选签名接线和 `check:android-release-config` 已完成；真实 keystore 仍需用户本地生成并安全保存 |
-| Android APK/AAB 构建 | Blocked | 用户/Agent-Release | 当前缺 Java 与 Android SDK |
+| Android APK/AAB 构建 | Ready for QA | Agent-Release/QA | OpenJDK 21 + Android SDK 环境已就绪；Debug APK、未签名 Release APK/AAB 构建通过；正式签名与应用市场安装验证待真实 keystore |
 | iOS 工程与模拟器运行 | Ready for QA | Agent-Release/QA | 工程、Podfile/lockfile 已生成；`cap sync ios`、无签名 Simulator Debug 构建、安装和启动通过；真机/Archive 仍需 Apple Developer Team 与签名 |
 | 发布环境报告 | Done | Agent-Release/QA | `npm run check:release-env` 会报告本机阻塞项 |
 
@@ -83,7 +83,9 @@ npm run smoke:api
 npm run smoke:live-ai
 npm run smoke:ui
 npm run check:release-env -w apps/mobile -- --strict
+npm run build:android:debug
+npm run build:android:release
 npm run build:ios:simulator
 ```
 
-`check:mvp` 是静态门禁；`smoke:api` 需要 MySQL、migrate 和后端服务；`smoke:live-ai` 需要真实 AI Key、后端服务和显式 `LIVE_AI_SMOKE=true`；`smoke:ui` 需要前端 dev server；`check:release-env --strict` 需要真实本机 Android/iOS 打包环境；`build:ios:simulator` 验证 iOS 工程、Capacitor 同步和无签名模拟器构建。
+`check:mvp` 是静态门禁；`smoke:api` 需要 MySQL、migrate 和后端服务；`smoke:live-ai` 需要真实 AI Key、后端服务和显式 `LIVE_AI_SMOKE=true`；`smoke:ui` 需要前端 dev server；`check:release-env --strict` 需要真实本机 Android/iOS 打包环境；`build:android:debug` 验证 Debug APK；`build:android:release` 验证 Release APK/AAB（无 keystore 时未签名）；`build:ios:simulator` 验证 iOS 工程、Capacitor 同步和无签名模拟器构建。

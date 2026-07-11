@@ -10,6 +10,7 @@
 - Web 构建产物已同步到 Android assets。
 - Release 签名模板 `apps/mobile/android/keystore.properties.example` 已提供。
 - `npm run check:android-release-config` 会检查签名模板、Gradle 接线和 keystore 防提交规则。
+- Debug APK、未签名 Release APK 与未签名 Release AAB 已通过 Gradle 构建验证。
 
 ## 本机环境要求
 
@@ -20,20 +21,27 @@
 - Java JDK。
 - `ANDROID_HOME` 或 Android Studio 自动配置。
 
-当前机器检查结果：
+当前机器检查结果（2026-07-11）：
 
-- `java -version` 报错：Unable to locate a Java Runtime。
-- `ANDROID_HOME` 为空。
+- OpenJDK 21.0.11。
+- Android SDK：`/Users/rising/Library/Android/sdk`。
+- `npm run check:release-env -w apps/mobile -- --strict` 通过。
 
 ## 后续命令
 
-安装好 Android Studio 和 JDK 后执行：
+日常构建执行：
 
 ```bash
 cd /Users/rising/Desktop/YiJing
-npm run build:mobile
-npm run cap:sync:android -w apps/mobile
+npm run build:android:debug
+npm run build:android:release
 ```
+
+输出位置：
+
+- Debug APK：`apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk`（Android Debug 签名）。
+- Release APK：`apps/mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk`。
+- Release AAB：`apps/mobile/android/app/build/outputs/bundle/release/app-release.aab`（未签名）。
 
 打开 Android Studio：
 
@@ -64,13 +72,13 @@ keyPassword=真实密码
 - `storeFile` 建议使用绝对路径，keystore 文件放在仓库外的安全位置。
 - 如果没有 `keystore.properties`，debug 构建不受影响；release 构建会保持未签名或由 Android Studio 本地配置处理。
 
-本机安装好 Java 与 Android SDK 后可运行：
+配置真实 keystore 后可重新运行：
 
 ```bash
-npm run build:mobile
-npm run cap:sync:android -w apps/mobile
 npm run check:android-release-config
-cd apps/mobile/android
-./gradlew bundleRelease
-./gradlew assembleRelease
+npm run build:android:release
 ```
+
+未配置 `keystore.properties` 时，`build:android:release` 只验证 Release 编译与打包并输出未签名产物，不能直接上架。正式发布前必须配置并安全保存真实 keystore，再验证签名证书和应用市场安装包。
+
+该 npm 命令内部依次执行 Gradle `assembleRelease` 和 `bundleRelease`；保留这两个任务名，便于在 Android Studio/CI 中直接定位 APK 与 AAB 构建阶段。

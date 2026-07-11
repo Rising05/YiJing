@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "build:android:debug": "npm run build && npm run cap:sync:android && ./android/gradlew -p android assembleDebug",
+    "build:android:release": "npm run build && npm run cap:sync:android && ./android/gradlew -p android assembleRelease bundleRelease",
     "build:ios:simulator": "npm run build && npm run cap:sync:ios && xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/yijing-derived-data CODE_SIGNING_ALLOWED=NO build",
     "check:android-release-config": "node scripts/check-android-release-config.mjs",
     "check:compliance-copy": "node scripts/check-compliance-copy.mjs",
