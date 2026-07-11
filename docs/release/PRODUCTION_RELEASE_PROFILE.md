@@ -20,7 +20,7 @@
 | --- | --- | --- | --- |
 | 正式 App 名称 | TODO | 忆境 | 当前为暂定名，正式上架前需确认 |
 | 副标题/一句话介绍 | TODO | AI 记忆辅助 App | 用于应用商店和官网 |
-| 正式 logo 源文件 | TODO | `apps/mobile/src/assets/logo.png` | 当前已有 Android 图标源图，正式品牌资产仍需确认 |
+| 正式 logo 源文件 | TODO | `logo.png`、`apps/mobile/src/assets/logo.png` | 两份当前源图内容一致，已用于 Android/iOS 图标准备；正式品牌资产仍需确认 |
 | 包名/App ID | Done | `cn.memorypalace.yijing` | 已写入 Capacitor 和 Android 工程 |
 | 首版版本号 | Done | `0.1.0` | 前端显示版本与 Android `versionName` 已一致 |
 

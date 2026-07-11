@@ -312,31 +312,29 @@ S3_SECRET_ACCESS_KEY="..."
 
 ## iOS 打包
 
-已完成项目侧准备：
+已完成项目侧准备与模拟器验证：
 
 - `@capacitor/ios`
 - `capacitor.config.ts`
+- `apps/mobile/ios` Xcode 工程与 CocoaPods lockfile
 - 图标/启动页占位源文件
 - `apps/mobile/IOS_SETUP.md`
+- iOS Simulator Debug 构建、安装与启动
 
-本机还需要：
+当前验证环境：
 
-- 完整 Xcode。
-- CocoaPods。
+- Xcode 26.4。
+- CocoaPods 1.16.2。
+- iPhone 17 Pro / iOS 26.4 Simulator。
 
-安装好 iOS 环境后执行：
+日常验证执行：
 
 ```bash
-npm run build:mobile
-npm run cap:add:ios -w apps/mobile
-npm run cap:sync:ios -w apps/mobile
+npm run build:ios:simulator
 open apps/mobile/ios/App/App.xcworkspace
 ```
 
-当前已知阻塞：
-
-- `pod` 命令不存在。
-- `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode。
+`build:ios:simulator` 会构建 Web 包、同步 Capacitor/CocoaPods，并执行无签名 iOS Simulator Debug 构建。真机运行、Archive 和 App Store 发布仍需 Apple Developer Team 与签名配置。
 
 ## Android 打包
 
@@ -385,6 +383,7 @@ Android release 签名已预留 `apps/mobile/android/keystore.properties.example
 
 ```bash
 npm run build
+npm run build:ios:simulator
 npm run build:mobile
 npm run build:server
 npm run check:auth-providers
@@ -466,6 +465,8 @@ npm run smoke:ui
 
 `npm run check:release-env` 会检查本机原生打包环境，包括 Node/npm、Capacitor 配置、Android 工程、Java、Android SDK、iOS 工程、Xcode 和 CocoaPods。默认只报告阻塞项并返回成功；需要作为发布门禁时可运行 `npm run check:release-env -w apps/mobile -- --strict`。
 
+`npm run build:ios:simulator` 会先构建移动端 Web 包并执行 `cap sync ios`，再通过 Xcode workspace 生成无签名 iOS Simulator Debug App；它用于工程和原生插件回归，不替代真机签名或 App Store Archive。
+
 `npm run check:tracking-sdk` 会扫描移动端 `package.json`、root `package-lock.json`、Android manifest/Gradle 文件和 iOS Info.plist/Podfile，发现广告、归因、统计追踪、ATT 或 SKAdNetwork 相关依赖和配置时失败，支撑 MVP “无广告 SDK / 无无关追踪 SDK”验收。
 
 `npm run cleanup:expired-images` 会扫描已过 `expiresAt` 且仍保留背景图 URL 的生成记录，先走 `StorageService` 删除接口，再清空数据库摘要和结果 JSON 中的 `backgroundImageUrl`。检查模式可用 `npm run cleanup:expired-images -w apps/server -- --dry-run` 或 `IMAGE_CLEANUP_DRY_RUN=true npm run cleanup:expired-images`。
@@ -482,7 +483,7 @@ npm run smoke:ui
 - 配置通义万相 API Key 后验证真实生图。
 - 配置真实 OSS 或 S3-compatible 对象存储账号后验证上传、公开 URL 访问和删除闭环。
 - 确认正式云厂商、公网域名、HTTPS 证书，并将 `deploy/nginx/yijing.conf.example` 替换为线上 Nginx 或负载均衡配置。
-- 安装完整 Xcode + CocoaPods 后生成 iOS 工程。
+- 配置 Apple Developer Team 与正式签名后完成 iOS 真机、Archive 和 App Store 上架验证。
 - Android AAB/APK 打包。
 - 正式登录：手机号短信 + 微信移动 App 登录。
 - 正式合规文案与备案信息。

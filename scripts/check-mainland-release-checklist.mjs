@@ -73,13 +73,14 @@ function checkChecklist() {
     '公安联网备案',
     '软著',
     'Android APK/AAB 构建',
-    'iOS 工程',
+    'iOS 工程与模拟器运行',
     'npm run check:mvp',
     'npm run check:release-profile',
     'npm run smoke:api',
     'npm run smoke:live-ai',
     'npm run smoke:ui',
     'npm run check:release-env -w apps/mobile -- --strict',
+    'npm run build:ios:simulator',
   ], 'docs/release/MAINLAND_RELEASE_CHECKLIST.md must keep the release handoff checklist complete')
 }
 
@@ -98,6 +99,9 @@ function checkReferences() {
 function checkPackageScript() {
   if (files.packageJson.scripts?.['check:mainland-release'] !== 'node scripts/check-mainland-release-checklist.mjs') {
     errors.push('package.json must expose check:mainland-release')
+  }
+  if (files.packageJson.scripts?.['build:ios:simulator'] !== 'npm run build:ios:simulator -w apps/mobile') {
+    errors.push('package.json must expose build:ios:simulator')
   }
 }
 

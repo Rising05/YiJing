@@ -11,6 +11,7 @@
     "dev:mobile": "npm run dev -w apps/mobile",
     "dev:server": "npm run dev -w apps/server",
     "build": "npm run build -w apps/mobile",
+    "build:ios:simulator": "npm run build:ios:simulator -w apps/mobile",
     "build:mobile": "npm run build -w apps/mobile",
     "build:server": "npm run build -w apps/server",
     "check:android-release-config": "npm run check:android-release-config -w apps/mobile",

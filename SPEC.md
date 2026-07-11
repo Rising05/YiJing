@@ -2,7 +2,7 @@
 
 版本：v0.1  
 状态：需求访谈初稿  
-最后更新：2026-07-06  
+最后更新：2026-07-11
 目标项目目录：`/Users/rising/Desktop/YiJing`
 
 ## 1. 项目摘要
@@ -98,7 +98,7 @@
 | Phase 2 后端 Mock + MySQL | Ready for QA | Agent-Backend/QA | 2026-07-06 | MySQL migrate 完成；后端 API smoke 覆盖登录、正式登录占位、输入校验、内容安全、短/长文本生成、canonical anchor、单词生成、重新生成、历史、收藏、删除、额度耗尽和删号后旧 token 拒绝 |
 | Phase 3 LLM 接入 | In Progress | Agent-AI | 2026-07-06 | OpenAI-compatible LLM client、prompt 包、JSON 解析 + schema/anchor 校验重试已实现；真实调用 live smoke 入口已提供，待 API Key 验证 |
 | Phase 4 通义万相 + 图片存储 | In Progress | Agent-AI/Backend | 2026-07-06 | ImageService、通义万相 wan2.6-t2i HTTP 同步调用入口、图片存储抽象、本地/OSS/S3-compatible provider、共享生图 prompt 禁令和静态检查已实现；真实万相 live smoke 入口已提供，真实 Key/账号待验证 |
-| Phase 5 iOS 打包 | In Progress | Agent-Release | 2026-07-05 | Capacitor iOS/Android 依赖、脚本、配置、占位图标/启动页和发布元数据静态检查已完成；`cap add ios` 因 CocoaPods/完整 Xcode 缺失阻塞 |
+| Phase 5 iOS 打包 | Ready for QA | Agent-Release/QA | 2026-07-11 | Xcode 工程与 Podfile/lockfile 已生成；Capacitor/CocoaPods 同步、无签名 Simulator Debug 构建、iPhone 17 Pro 模拟器安装和启动通过；真机/Archive 待 Apple Developer Team 与签名 |
 | QA 回归验收 | Done | Agent-QA | 2026-07-06 | 静态检查通过；后端 API smoke 和前端 Chrome headless UI smoke 通过 |
 
 状态枚举：`Not Started`、`In Progress`、`Blocked`、`Ready for QA`、`Done`。
@@ -114,6 +114,7 @@
 | Phase 3 LLM 接入代码框架 | Agent-AI | Done | 新增 prompts 包、OpenAI-compatible chat completions client、JSON 解析重试、文本/单词 schema 校验、anchor 合法性与容量校验，并接入生成服务；无 Key 时默认 mock | `packages/prompts/**`, `apps/server/src/modules/ai/**`, `apps/server/src/modules/generation/**`, `apps/server/.env.example` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-03 |
 | Phase 4 生图服务代码框架 | Agent-AI | Done | 新增 ImageService 和 StorageService；默认 mock，配置 `IMAGE_MOCK_MODE=false` 与 `WANX_API_KEY` 后调用通义万相 `wan2.6-t2i`，强制无文字/无水印参数并记录图片生成日志 | `apps/server/src/modules/image/**`, `apps/server/src/modules/generation/**`, `apps/server/.env.example`, `SPEC.md` | `npm run build:server`; `npm run build:mobile`; `npm run prisma:validate` | 2026-07-03 |
 | Phase 5 iOS 项目准备 | Agent-Release | Done | 加入 `@capacitor/ios`、iOS 同步脚本、Capacitor iOS 配置、图标/启动页 SVG 占位和 iOS 环境说明；Xcode 工程生成因本机环境缺口待执行 | `apps/mobile/package.json`, `apps/mobile/capacitor.config.ts`, `apps/mobile/IOS_SETUP.md`, `apps/mobile/src/assets/**`, `.gitignore`, `SPEC.md` | `npm run build:mobile`; `npm run cap:add:ios -w apps/mobile` 返回 CocoaPods 缺失错误 | 2026-07-03 |
+| iOS 原生工程生成与模拟器运行 | Agent-Release/QA | Ready for QA | 生成并纳入 Capacitor iOS Xcode 工程、Podfile/lockfile、AppDelegate、Info.plist、AppIcon/LaunchScreen；新增可重复的 `build:ios:simulator`；在 iPhone 17 Pro / iOS 26.4 模拟器完成构建、安装和启动，首页正常渲染 | `apps/mobile/ios/**`, `apps/mobile/package.json`, `package.json`, `logo.png`, `apps/mobile/IOS_SETUP.md`, `README.md`, `docs/release/**`, `scripts/check-mainland-release-checklist.mjs`, `SPEC.md` | `npm run cap:sync:ios -w apps/mobile`; `npm run build:ios:simulator`; `xcrun simctl install ...`; `xcrun simctl launch ... cn.memorypalace.yijing`; `npm run check:release-env -w apps/mobile -- --strict`; `npm run check:mvp`; `git diff --check` | 2026-07-11 |
 | README 使用文档 | Agent-Product | Done | 新增项目介绍、技术栈、本地运行、mock 模式、LLM/万相接入、iOS/Android 打包和大陆发布注意事项 | `README.md`, `SPEC.md` | 人工检查；`npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 历史与账号 API 联调适配 | Agent-Frontend | Done | 历史列表、历史详情、删除历史和删除账号优先请求后端 API，后端不可用时回退本地缓存 | `apps/mobile/src/pages/HistoryPage.tsx`, `apps/mobile/src/pages/DetailPage.tsx`, `apps/mobile/src/pages/SettingsPage.tsx`, `SPEC.md` | `npm run build:mobile`; `npm run build:server`; `npm run prisma:validate` | 2026-07-03 |
 | 首页最近历史摘要联调 | Agent-Frontend/QA | Done | 首页“最近生成”从单纯读取本地 `historyStore` 扩展为真实登录 token 下优先调用后端 `GET /history` 读取 MySQL 历史摘要，后端失败或本地 mock 登录时回退本地缓存；摘要卡片显示文本/单词类型和生成时间，只取最近 3 条；UI smoke 在生成文本和单词后回首页断言最近生成至少 2 条并包含类型标签 | `apps/mobile/src/pages/HomePage.tsx`, `apps/mobile/scripts/smoke-ui.mjs`, `README.md`, `SPEC.md` | `node --check apps/mobile/scripts/smoke-ui.mjs`; `npm run build:mobile`; `UI_BASE_URL=http://127.0.0.1:5173 npm run smoke:ui`; `npm run check:mvp`; `git diff --check` | 2026-07-06 |
@@ -227,8 +228,8 @@ Notes:
 | 微信开放平台应用未配置 | 微信登录 | 用户/Agent-Backend | Open | MVP 只预留 |
 | 正式 App 名称未确认 | iOS 发布、品牌资产 | 用户/Agent-Release | Open | 当前使用暂定名 |
 | Docker daemon 未运行 | Phase 2 MySQL migrate | 用户/Agent-Backend | Resolved | ✅ Docker 已启动，MySQL 容器正常运行，migrate 已完成 |
-| CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Open | `cap add ios` 报错：CocoaPods is not installed；尝试 `brew install cocoapods` 但因 brew 镜像 SSL/404 网络错误失败 |
-| 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Open | `xcodebuild` 当前指向 Command Line Tools，不是完整 Xcode；需用户从 App Store 下载安装 |
+| CocoaPods 未安装 | Phase 5 iOS 工程生成 | 用户/Agent-Release | Resolved | ✅ CocoaPods 1.16.2 已安装，`cap sync ios` 与 `pod install` 通过 |
+| 完整 Xcode 未配置 | Phase 5 iOS 构建/模拟器运行 | 用户/Agent-Release | Resolved | ✅ Xcode 26.4 已配置，无签名 Simulator Debug 构建、安装和启动通过 |
 | Java/Android SDK 未配置 | Android APK/AAB 构建 | 用户/Agent-Release | Open | `java -version` 报错且 `ANDROID_HOME` 为空；尝试 `brew install --cask temurin@17` 但因 brew 镜像网络错误失败；Android 工程与 release 签名模板/门禁已完成，但无法在本机构建 APK/AAB |
 
 ### 4.4 决策记录
@@ -376,7 +377,7 @@ Progress Log:
 
 | Status | Owner | 更新时间 | 证据/备注 |
 | --- | --- | --- | --- |
-| In Progress | Agent-Release | 2026-07-05 | iOS 依赖、脚本、配置、占位资源和发布元数据静态检查已完成；`cap add ios` 因 CocoaPods 未安装而无法生成 Xcode 工程 |
+| Ready for QA | Agent-Release/QA | 2026-07-11 | iOS Xcode 工程与 CocoaPods 依赖已生成并纳入仓库；`cap sync ios`、无签名 Simulator Debug 构建、iPhone 17 Pro 模拟器安装和启动通过；真机与 Archive 待 Apple Developer Team/签名 |
 
 ## 6. 产品信息架构
 
