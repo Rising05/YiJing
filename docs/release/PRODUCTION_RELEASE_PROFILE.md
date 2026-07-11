@@ -43,7 +43,7 @@
 | --- | --- | --- | --- |
 | LLM 服务商 | TODO | OpenAI-compatible | 配置 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL` 后运行 live smoke |
 | 生图服务商 | TODO | 通义万相 DashScope | 配置 `WANX_API_KEY` 后运行 live smoke |
-| 图片对象存储 | TODO | local / OSS / S3-compatible | 正式发布建议确认公开域名、生命周期和删除策略 |
+| 图片对象存储 | TODO | local / OSS / S3-compatible | 正式发布需确认公开域名、生命周期、删除策略；可信内网图片源才配置 `IMAGE_DOWNLOAD_ALLOWED_HOSTS` |
 | 短信服务商 | TODO | 待确认 | 启用 `AUTH_FORMAL_PROVIDERS=sms` 前必须配置 |
 | 微信开放平台移动应用 | TODO | 待确认 | 启用 `AUTH_FORMAL_PROVIDERS=wechat` 前必须配置 |
 

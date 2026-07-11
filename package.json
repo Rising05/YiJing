@@ -32,6 +32,7 @@
     "check:frontend-secrets": "npm run check:frontend-secrets -w apps/mobile",
     "check:image-prompts": "npm run check:image-prompts -w apps/server",
     "check:image-storage": "npm run check:image-storage -w apps/server",
+    "check:image-download-security": "npm run check:image-download-security -w apps/server",
     "check:mainland-release": "node scripts/check-mainland-release-checklist.mjs",
     "check:mobile-layout": "npm run check:mobile-layout -w apps/mobile",
     "check:mobile-runtime-config": "npm run check:mobile-runtime-config -w apps/mobile",

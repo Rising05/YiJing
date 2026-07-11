@@ -167,6 +167,23 @@ function checkImage() {
 }
 
 function checkStorage() {
+  const requestTimeoutMs = Number(env.IMAGE_STORAGE_REQUEST_TIMEOUT_MS ?? 30000)
+  if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 1000 || requestTimeoutMs > 300000) {
+    error('IMAGE_STORAGE_REQUEST_TIMEOUT_MS should be an integer from 1000 to 300000')
+  }
+
+  const downloadMaxBytes = Number(env.IMAGE_DOWNLOAD_MAX_BYTES ?? 20 * 1024 * 1024)
+  if (!Number.isInteger(downloadMaxBytes) || downloadMaxBytes < 1024 * 1024 || downloadMaxBytes > 50 * 1024 * 1024) {
+    error('IMAGE_DOWNLOAD_MAX_BYTES should be an integer from 1048576 to 52428800')
+  }
+
+  for (const host of csv('IMAGE_DOWNLOAD_ALLOWED_HOSTS')) {
+    const normalized = host.startsWith('*.') ? host.slice(2) : host
+    if (!normalized || /[/?#@]/.test(normalized)) {
+      error(`IMAGE_DOWNLOAD_ALLOWED_HOSTS contains an invalid host: ${host}`)
+    }
+  }
+
   const provider = normalizeProvider()
   const supported = new Set(['none', 'mock', 'local', 'oss', 's3', 's3-compatible'])
   if (!supported.has(provider)) {

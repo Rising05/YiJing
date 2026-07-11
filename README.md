@@ -278,9 +278,12 @@ STORAGE_PROVIDER="none"
 STORAGE_PROVIDER="local"
 LOCAL_STORAGE_DIR="uploads/generated-images"
 PUBLIC_BASE_URL="http://localhost:3000"
+IMAGE_STORAGE_REQUEST_TIMEOUT_MS=30000
+IMAGE_DOWNLOAD_MAX_BYTES=20971520
+IMAGE_DOWNLOAD_ALLOWED_HOSTS=""
 ```
 
-`local` 模式会把通义万相返回的远程图片下载到 `apps/server/uploads/generated-images/`，并通过 `/api/images/:fileName` 只读访问。`cleanup:expired-images`、历史单条删除和删除账号都会删除对应本地文件。
+`local` 模式会把通义万相返回的远程图片下载到 `apps/server/uploads/generated-images/`，并通过 `/api/images/:fileName` 只读访问。远程下载默认 30 秒超时、最大 20MB，只接受 PNG/JPEG/WebP 并校验文件签名；每次重定向都会重新检查目标，默认拒绝本机、私网、链路本地和保留地址。仅当可信图片服务确实使用内网地址时，才将精确主机或 `*.example.com` 写入 `IMAGE_DOWNLOAD_ALLOWED_HOSTS`。`cleanup:expired-images`、历史单条删除和删除账号都会删除对应本地文件。
 
 也可以配置阿里云 OSS：
 
@@ -409,6 +412,7 @@ npm run check:deploy-config
 npm run check:env-examples
 npm run check:error-codes
 npm run check:image-prompts
+npm run check:image-download-security
 npm run check:image-storage
 npm run check:mainland-release
 npm run check:mobile-layout
@@ -440,7 +444,7 @@ npm run smoke:ui
 
 `npm run check:mobile-runtime-config` 会检查 `apps/mobile/.env.production.example` 中的 `VITE_API_BASE_URL` 必须是 HTTPS、不能指向 localhost，并确认移动端源码只在开发环境 fallback 到 `http://localhost:3000/api`；本地 mock 登录、生成和重新生成回退也必须受开发环境开关保护，生产发布包不能静默离线生成。
 
-`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI HTTP 契约/AI 重试/图片 prompt/图片存储/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、生产发布资料表检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/Android release 签名配置/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
+`npm run check:mvp` 会按安全顺序执行主要静态 MVP 门禁：server build、Prisma validate、后端配置/env 示例完整性/CORS 配置/登录渠道预留/错误码/内容安全/AI 模板/AI HTTP 契约/AI 重试/图片 prompt/图片存储/图片下载安全/生产配置规则/生产脱敏/部署配置检查、大陆发布清单检查、生产发布资料表检查、mobile build、前端密钥/移动端布局/移动端运行配置/合规文案/权限/广告追踪 SDK/Android release 签名配置/发布元数据检查，以及原生发布环境报告。它不启动 MySQL、后端服务或浏览器，因此不能替代 `smoke:api` 和 `smoke:ui`。
 
 `npm run check:compliance-copy` 会扫描隐私政策、用户协议、AI 免责声明、设置页入口和合规页面路由，防止 MVP 关键合规文案被误删。
 
@@ -465,6 +469,8 @@ npm run smoke:ui
 `npm run check:error-codes` 会扫描 `apps/server/src` 中显式返回或抛出的业务错误码，并确认每个码都在 `packages/shared` 的 `ErrorCode` 和 `ErrorLabels` 中覆盖，防止真实 LLM/生图错误变成前端未知私有码。
 
 `npm run check:image-storage` 需要先执行 `npm run build:server`，用于验证 `STORAGE_PROVIDER=local` 的本地图片保存/删除闭环，以及 `STORAGE_PROVIDER=oss`、`STORAGE_PROVIDER=s3-compatible` 的签名上传/删除请求生成。
+
+`npm run check:image-download-security` 需要先执行 `npm run build:server`，会用本机临时 HTTP 服务验证图片持久化下载的 SSRF/重定向防护、格式与文件签名、声明和流式大小限制、请求超时，以及可信 allowlist 下的保存/删除闭环；不会访问公网。
 
 `npm run check:production-redaction` 会检查生成记录和 AI 使用日志的生产环境脱敏守卫，防止 `GenerationRecord.promptUsed`、`AiUsageLog.rawPrompt`、`AiUsageLog.rawResponse` 在生产环境直接保存完整 prompt 或模型原始 JSON。
 

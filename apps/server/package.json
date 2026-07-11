@@ -15,6 +15,7 @@
     "check:env-examples": "node scripts/check-env-examples.mjs",
     "check:error-codes": "node scripts/check-error-codes.mjs",
     "check:image-storage": "node scripts/check-image-storage.mjs",
+    "check:image-download-security": "node scripts/check-image-download-security.mjs",
     "check:image-prompts": "node scripts/check-image-prompts.mjs",
     "check:ai-retry": "node scripts/check-ai-retry.mjs",
     "check:ai-http-contract": "node scripts/check-ai-http-contract.mjs",

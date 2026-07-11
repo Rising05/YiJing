@@ -31,6 +31,9 @@ try {
     STORAGE_PROVIDER: 'local',
     LOCAL_STORAGE_DIR: 'uploads/generated-images',
     PUBLIC_BASE_URL: 'https://example.com',
+    IMAGE_STORAGE_REQUEST_TIMEOUT_MS: '30000',
+    IMAGE_DOWNLOAD_MAX_BYTES: '20971520',
+    IMAGE_DOWNLOAD_ALLOWED_HOSTS: '',
   })
   expectStatus(validEnvPath, 0, 'valid production config')
 
@@ -65,6 +68,9 @@ try {
     STORAGE_PROVIDER: 'local',
     LOCAL_STORAGE_DIR: 'uploads/generated-images',
     PUBLIC_BASE_URL: 'https://example.com',
+    IMAGE_STORAGE_REQUEST_TIMEOUT_MS: '30000',
+    IMAGE_DOWNLOAD_MAX_BYTES: '20971520',
+    IMAGE_DOWNLOAD_ALLOWED_HOSTS: '',
   })
   expectStatus(formalAuthEnvPath, 0, 'formal auth production config')
 

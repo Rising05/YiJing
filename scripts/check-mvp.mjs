@@ -18,6 +18,7 @@ const steps = [
   ['check:ai-retry', ['run', 'check:ai-retry']],
   ['check:image-prompts', ['run', 'check:image-prompts']],
   ['check:image-storage', ['run', 'check:image-storage']],
+  ['check:image-download-security', ['run', 'check:image-download-security']],
   ['check:production-config', ['run', 'check:production-config']],
   ['check:production-redaction', ['run', 'check:production-redaction']],
   ['check:deploy-config', ['run', 'check:deploy-config']],
